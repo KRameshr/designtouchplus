@@ -1,4 +1,4 @@
-import { Inter } from "next/font/google";
+import { Inter, Syne } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getCompanyInfo } from "@/lib/api";
@@ -6,8 +6,14 @@ import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-syne",
   display: "swap",
 });
 
@@ -23,8 +29,8 @@ export default async function RootLayout({ children }) {
   const companyInfo = await getCompanyInfo().catch(() => null);
 
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="font-sans">
+    <html lang="en" className={`${inter.variable} ${syne.variable}`}>
+      <body className="font-sans bg-[#080808] text-white antialiased">
         <Navbar />
         {children}
         <Footer companyInfo={companyInfo} />

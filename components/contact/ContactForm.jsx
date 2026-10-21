@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { submitContactMessage } from "@/lib/api";
@@ -8,6 +8,27 @@ import { submitContactMessage } from "@/lib/api";
 const ContactForm = () => {
   const [form, setForm] = useState({ name: "", email: "", company: "", subject: "", message: "" });
   const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const serviceParam = params.get("service");
+        const projectParam = params.get("project");
+        if (serviceParam || projectParam) {
+          setForm((prev) => ({
+            ...prev,
+            subject: prev.subject || (serviceParam ? `${serviceParam} Project Inquiry` : "Project Inquiry"),
+            message:
+              prev.message ||
+              (projectParam
+                ? `Hello DesignTouch+,\n\nI am interested in ${serviceParam || "content creation services"} inspired by your work on "${projectParam}". Let's discuss requirements and timelines.`
+                : ""),
+          }));
+        }
+      } catch (_) {}
+    }
+  }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
