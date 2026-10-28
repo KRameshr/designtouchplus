@@ -8,6 +8,7 @@ import {
   getProcessSteps,
   getTools,
   getServicesPageContent,
+  getServicesHeroBanners,
 } from "@/lib/api";
 
 export const metadata = {
@@ -16,9 +17,14 @@ export const metadata = {
     "Video editing, motion graphics, social media content, YouTube management, graphic design, thumbnail design, and commercial video services.",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function ServicesPage() {
-  const [content, services, processSteps, tools] = await Promise.all([
+  const [content, banners, services, processSteps, tools] = await Promise.all([
     getServicesPageContent().catch(() => null),
+    getServicesHeroBanners().catch(() => []),
     getServices().catch(() => []),
     getProcessSteps("SERVICES").catch(() => []),
     getTools().catch(() => []),
@@ -26,7 +32,7 @@ export default async function ServicesPage() {
 
   return (
     <main className="bg-[#080808] min-h-screen text-white">
-      <ServicesHero content={content} />
+      <ServicesHero content={content} initialBanners={banners} />
       <ServicesGrid services={services} content={content} />
       <ServicesProcess steps={processSteps} content={content} />
       <ToolsRow tools={tools} content={content} />

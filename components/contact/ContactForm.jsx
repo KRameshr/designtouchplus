@@ -15,15 +15,42 @@ const ContactForm = () => {
         const params = new URLSearchParams(window.location.search);
         const serviceParam = params.get("service");
         const projectParam = params.get("project");
-        if (serviceParam || projectParam) {
+        const planParam = params.get("plan");
+
+        if (serviceParam || projectParam || planParam) {
+          const serviceLabel = serviceParam
+            ? serviceParam === "VIDEO_EDITING"
+              ? "Video Editing"
+              : serviceParam === "THUMBNAIL_DESIGN"
+              ? "Thumbnail Design"
+              : serviceParam === "CONTENT_CREATOR"
+              ? "Content Creator Packages"
+              : serviceParam
+            : null;
+
+          const subjectLine =
+            serviceLabel && planParam
+              ? `${serviceLabel} — ${planParam} Inquiry`
+              : planParam
+              ? `${planParam} Inquiry`
+              : serviceLabel
+              ? `${serviceLabel} Project Inquiry`
+              : "Project Inquiry";
+
+          const messageText = planParam
+            ? `Hello DesignTouch+,\n\nI am interested in getting started with the ${planParam}${
+                serviceLabel ? ` under ${serviceLabel}` : ""
+              }. Please share onboarding details, requirements, and next steps.`
+            : projectParam
+            ? `Hello DesignTouch+,\n\nI am interested in ${
+                serviceLabel || "creative content services"
+              } inspired by your work on "${projectParam}". Let's discuss requirements and timelines.`
+            : "";
+
           setForm((prev) => ({
             ...prev,
-            subject: prev.subject || (serviceParam ? `${serviceParam} Project Inquiry` : "Project Inquiry"),
-            message:
-              prev.message ||
-              (projectParam
-                ? `Hello DesignTouch+,\n\nI am interested in ${serviceParam || "content creation services"} inspired by your work on "${projectParam}". Let's discuss requirements and timelines.`
-                : ""),
+            subject: prev.subject || subjectLine,
+            message: prev.message || messageText,
           }));
         }
       } catch (_) {}

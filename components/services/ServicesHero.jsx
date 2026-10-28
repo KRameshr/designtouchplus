@@ -1,214 +1,492 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { getServicesPageContent, getServicesHeroBanners } from "@/lib/api";
 
-export default function ServicesHero({ content }) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+const SLIDE_INTERVAL_MS = 2000;
+const SLIDE_TRANSITION_MS = 600;
+const REDUCED_MOTION_TRANSITION_MS = 250;
+const DEFAULT_BANNERS = [];
+
+function resolveInitialBanners(content, initialBanners) {
+  if (Array.isArray(initialBanners) && initialBanners.length > 0) {
+    return initialBanners;
+  }
+  if (Array.isArray(content?.heroBanners)) {
+    return content.heroBanners;
+  }
+  if (content?.heroBannerImageUrl?.trim()) {
+    return [
+      {
+        id: "legacy-banner-1",
+        label: "Banner 1",
+        imageUrl: content.heroBannerImageUrl.trim(),
+        displayOrder: 1,
+        isActive: true,
+      },
+    ];
+  }
+  return DEFAULT_BANNERS;
+}
+
+export default function ServicesHero({
+  content,
+  initialBanners = DEFAULT_BANNERS,
+}) {
+  const [liveContent, setLiveContent] = useState(content || null);
+  const [banners, setBanners] = useState(() =>
+    resolveInitialBanners(content, initialBanners)
+  );
+
+  const [failedBannerKeys, setFailedBannerKeys] = useState({});
+  const [trackIndex, setTrackIndex] = useState(0);
+  const [isInstantReset, setIsInstantReset] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Respect prefers-reduced-motion media query (uses shorter transition while keeping banner display/cycling intact)
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return undefined;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mq.matches);
+    const handler = (e) => setPrefersReducedMotion(e.matches);
+    if (mq.addEventListener) {
+      mq.addEventListener("change", handler);
+      return () => mq.removeEventListener("change", handler);
+    }
+    return undefined;
+  }, []);
+
+  // Sync when server-rendered props update
+  useEffect(() => {
+    if (content) {
+      setLiveContent(content);
+    }
+  }, [content]);
+
+  useEffect(() => {
+    if (Array.isArray(initialBanners) && initialBanners.length > 0) {
+      setBanners(initialBanners);
+    } else if (Array.isArray(content?.heroBanners)) {
+      setBanners(content.heroBanners);
+    }
+  }, [initialBanners, content]);
+
+  // Fetch latest saved CMS content and active banners on mount and when tab regains visibility
+  useEffect(() => {
+    let active = true;
+
+    const fetchLatest = () => {
+      Promise.all([
+        getServicesPageContent().catch(() => null),
+        getServicesHeroBanners().catch(() => null),
+      ]).then(([freshContent, freshBanners]) => {
+        if (!active) return;
+        if (freshContent) {
+          setLiveContent(freshContent);
+        }
+        if (Array.isArray(freshBanners)) {
+          setBanners(freshBanners);
+          setFailedBannerKeys((prev) =>
+            Object.keys(prev).length === 0 ? prev : {}
+          );
+        } else if (Array.isArray(freshContent?.heroBanners)) {
+          setBanners(freshContent.heroBanners);
+          setFailedBannerKeys((prev) =>
+            Object.keys(prev).length === 0 ? prev : {}
+          );
+        }
+      });
+    };
+
+    fetchLatest();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchLatest();
+      }
+    };
+
+    window.addEventListener("focus", fetchLatest);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      active = false;
+      window.removeEventListener("focus", fetchLatest);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  // Filter and sort active banners with valid image URLs in saved displayOrder
+  const activeBanners = useMemo(() => {
+    if (!Array.isArray(banners)) return [];
+    return [...banners]
+      .filter((b) => {
+        const url = b?.imageUrl?.trim();
+        const key = b?.id || url;
+        return b?.isActive !== false && Boolean(url) && !failedBannerKeys[key];
+      })
+      .sort((a, b) => (a.displayOrder ?? 1) - (b.displayOrder ?? 1));
+  }, [banners, failedBannerKeys]);
+
+  // Preload all active banner images so slides are decoded before becoming active
+  useEffect(() => {
+    if (typeof window === "undefined" || activeBanners.length === 0) return;
+    activeBanners.forEach((banner) => {
+      const url = banner?.imageUrl?.trim();
+      if (!url) return;
+      const preloadImg = new window.Image();
+      preloadImg.decoding = "async";
+      preloadImg.src = url;
+    });
+  }, [activeBanners]);
+
+  const bannerSignature = useMemo(
+    () =>
+      activeBanners
+        .map((b) => `${b.id || ""}:${b.displayOrder ?? 1}:${b.imageUrl}`)
+        .join("|"),
+    [activeBanners]
+  );
+
+  // Reset track position cleanly whenever the active banner list or order changes
+  useEffect(() => {
+    setIsInstantReset(true);
+    setTrackIndex(0);
+    const reenableTimer = setTimeout(() => {
+      setIsInstantReset(false);
+    }, 50);
+    return () => clearTimeout(reenableTimer);
+  }, [bannerSignature, activeBanners.length]);
+
+  // Automatic right-to-left horizontal slide every 2 seconds when > 1 banner is active
+  useEffect(() => {
+    if (activeBanners.length <= 1) {
+      return undefined;
+    }
+
+    const intervalId = setInterval(() => {
+      setIsInstantReset(false);
+      setTrackIndex((prev) => {
+        // Safety guard if tab was backgrounded while on the cloned loop slide
+        if (prev >= activeBanners.length) {
+          return 1;
+        }
+        return prev + 1;
+      });
+    }, SLIDE_INTERVAL_MS);
+
+    return () => clearInterval(intervalId);
+  }, [activeBanners.length, bannerSignature]);
+
+  // Seamless loop reset: when trackIndex reaches the trailing clone (index === activeBanners.length),
+  // wait for the horizontal slide transition to finish, then silently snap back to index 0 without transition.
+  const transitionDurationMs = prefersReducedMotion
+    ? REDUCED_MOTION_TRANSITION_MS
+    : SLIDE_TRANSITION_MS;
+
+  useEffect(() => {
+    if (activeBanners.length <= 1 || trackIndex < activeBanners.length) {
+      return undefined;
+    }
+
+    let restoreTimerId = null;
+    const snapTimerId = setTimeout(() => {
+      setIsInstantReset(true);
+      setTrackIndex(0);
+      restoreTimerId = setTimeout(() => {
+        setIsInstantReset(false);
+      }, 50);
+    }, transitionDurationMs);
+
+    return () => {
+      clearTimeout(snapTimerId);
+      if (restoreTimerId) clearTimeout(restoreTimerId);
+    };
+  }, [trackIndex, activeBanners.length, transitionDurationMs]);
+
+  const handleBannerError = useCallback((key) => {
+    if (!key) return;
+    setFailedBannerKeys((prev) => ({ ...prev, [key]: true }));
+  }, []);
+
+  // Build slides list: when > 1 active banner, append a clone of the first banner at the end
+  // so transitioning from the last banner back to the first also slides smoothly right-to-left.
+  const renderedSlides = useMemo(() => {
+    if (activeBanners.length <= 1) {
+      return activeBanners;
+    }
+    return [
+      ...activeBanners,
+      {
+        ...activeBanners[0],
+        _isLoopClone: true,
+      },
+    ];
+  }, [activeBanners]);
+
+  const effectiveTrackIndex =
+    renderedSlides.length > 0
+      ? Math.min(trackIndex, renderedSlides.length - 1)
+      : 0;
+
+  const activeIndicatorIndex =
+    activeBanners.length > 0 ? effectiveTrackIndex % activeBanners.length : 0;
+
+  const shouldAnimateSlide = activeBanners.length > 1 && !isInstantReset;
+
+  const activeContent = liveContent || content;
 
   const eyebrow =
-    content?.heroEyebrow || "OUR SERVICES // FULL-SERVICE CREATIVE STUDIO";
-  const headlineLine1 = content?.heroHeadlineLine1 || "CREATIVE SOLUTIONS";
-  const headlineLine2 = content?.heroHeadlineLine2 || "THAT DRIVE";
-  const headlineHighlight = content?.heroHeadlineHighlight || "RESULTS.";
+    activeContent?.heroEyebrow || "OUR SERVICES // FULL-SERVICE CREATIVE STUDIO";
+  const headlineLine1 = activeContent?.heroHeadlineLine1 || "CREATIVE SOLUTIONS";
+  const headlineLine2 = activeContent?.heroHeadlineLine2 || "THAT DRIVE";
+  const headlineHighlight = activeContent?.heroHeadlineHighlight || "RESULTS.";
   const description =
-    content?.heroDescription ||
+    activeContent?.heroDescription ||
     "From concept to final cut, we provide end-to-end creative services that help brands connect, engage, and grow. Every edit, thumbnail, and motion visual is crafted for maximum retention and measurable conversion.";
-  const primaryCtaText = content?.heroPrimaryCtaText || "DISCUSS YOUR PROJECT";
-  const primaryCtaLink = content?.heroPrimaryCtaLink || "/contact";
-  const secondaryCtaText = content?.heroSecondaryCtaText || "VIEW WORK ARCHIVE";
-  const secondaryCtaLink = content?.heroSecondaryCtaLink || "/portfolio";
+  const primaryCtaText =
+    activeContent?.heroPrimaryCtaText || "DISCUSS YOUR PROJECT";
+  const primaryCtaLink = activeContent?.heroPrimaryCtaLink || "/contact";
+  const secondaryCtaText =
+    activeContent?.heroSecondaryCtaText || "VIEW WORK ARCHIVE";
+  const secondaryCtaLink = activeContent?.heroSecondaryCtaLink || "/portfolio";
 
-  const bannerImageUrl = content?.heroBannerImageUrl;
-  const bannerAlt = content?.heroHeadlineLine1
-    ? `${content.heroHeadlineLine1} — DesignTouch+ Creative Studio Services`
-    : "DesignTouch+ Creative Studio Services Hero Banner";
+  const stat1Value = activeContent?.heroStat1Value || "4K+";
+  const stat1Label = activeContent?.heroStat1Label || "Master Exports";
+  const stat2Value = activeContent?.heroStat2Value || "48H";
+  const stat2Label = activeContent?.heroStat2Label || "Avg First Draft";
+  const stat3Value = activeContent?.heroStat3Value || "100%";
+  const stat3Label = activeContent?.heroStat3Label || "Retention Focus";
 
-  const stat1Value = content?.heroStat1Value || "4K+";
-  const stat1Label = content?.heroStat1Label || "Master Exports";
-  const stat2Value = content?.heroStat2Value || "48H";
-  const stat2Label = content?.heroStat2Label || "Avg First Draft";
-  const stat3Value = content?.heroStat3Value || "100%";
-  const stat3Label = content?.heroStat3Label || "Retention Focus";
-
-  const showStats = content?.heroShowStats !== false;
-  const showWorkstation = content?.heroShowWorkstation !== false;
+  const showStats = activeContent?.heroShowStats !== false;
+  const hasBanners = activeBanners.length > 0;
 
   return (
-    <section className="bg-[#080808] text-white px-4 sm:px-6 pt-14 sm:pt-20 pb-16 sm:pb-20 border-b border-white/[0.08] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        <div
-          className={`grid grid-cols-1 ${
-            showWorkstation ? "lg:grid-cols-12" : "max-w-3xl"
-          } gap-10 lg:gap-12 xl:gap-16 items-center`}
-        >
-          {/* Left Column: Editorial Headline & Copy */}
+    <section className="relative w-full max-w-full bg-[#080808] text-white px-4 sm:px-6 py-10 sm:py-12 lg:py-14 border-b border-white/[0.08] overflow-hidden">
+      <div className="relative w-full max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-7 sm:gap-8 lg:gap-8 xl:gap-10">
+          {/* 1. Left Column: Editorial Copy & Actions Matched to Home Page Hero */}
           <motion.div
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className={`${showWorkstation ? "lg:col-span-7" : "w-full"} flex flex-col justify-center`}
+            className="relative z-10 w-full lg:w-[38%] xl:w-[38%] shrink-0 flex flex-col justify-center"
           >
-            {/* Eyebrow Label */}
-            <div className="flex items-center gap-2.5 mb-4 sm:mb-5">
-              <span className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0" aria-hidden="true" />
-              <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.24em] text-neutral-400">
-                {eyebrow}
-              </span>
-            </div>
+            {/* Eyebrow / Agency Marker (matches Home Hero) */}
+            {eyebrow && (
+              <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
+                <span
+                  className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0"
+                  aria-hidden="true"
+                />
+                <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.22em] text-neutral-400">
+                  {eyebrow}
+                </span>
+              </div>
+            )}
 
-            {/* Main Headline */}
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[0.98] tracking-tight text-white mb-6">
-              {headlineLine1} <br className="hidden sm:inline" />
-              {headlineLine2}{" "}
-              <span className="text-brand-red">{headlineHighlight}</span>
+            {/* Editorial Display Headline (matches Home Hero typography & prevents single-letter wrapping) */}
+            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[42px] xl:text-[50px] font-extrabold uppercase leading-[0.98] tracking-[-0.035em] text-white mb-6 sm:mb-7 [overflow-wrap:normal] [word-break:keep-all] [hyphens:none]">
+              {headlineLine1 && <span className="block">{headlineLine1}</span>}
+              {(headlineLine2 || headlineHighlight) && (
+                <span className="block">
+                  {headlineLine2 ? `${headlineLine2} ` : ""}
+                  {headlineHighlight ? (
+                    <span className="inline-block whitespace-nowrap text-brand-red">
+                      {headlineHighlight}
+                    </span>
+                  ) : null}
+                </span>
+              )}
             </h1>
 
-            {/* Supporting Description */}
-            <p className="text-neutral-300 text-sm sm:text-base leading-relaxed max-w-xl font-normal mb-8">
-              {description}
-            </p>
+            {/* Supporting Copy (matches Home Hero subheading) */}
+            {description && (
+              <p className="text-neutral-400 text-base sm:text-lg max-w-xl leading-relaxed mb-7 sm:mb-8 font-normal">
+                {description}
+              </p>
+            )}
 
-            {/* Action Row */}
-            <div className="flex flex-wrap items-center gap-4">
-              <Link
-                href={primaryCtaLink}
-                className="inline-flex items-center justify-center gap-2.5 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-[0.16em] px-8 py-4 rounded-none border border-brand-red transition-colors no-underline cursor-pointer select-none group"
-              >
-                <span>{primaryCtaText}</span>
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="transition-transform group-hover:translate-x-1"
-                  aria-hidden="true"
+            {/* Editorial Action Buttons (matches Home Hero CTA buttons) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4">
+              {primaryCtaText && (
+                <Link
+                  href={primaryCtaLink || "/contact"}
+                  className="inline-flex items-center justify-center gap-2.5 bg-brand-red text-white text-xs font-bold uppercase tracking-[0.16em] font-display px-7 py-4 rounded-none border border-brand-red hover:bg-[#dc2626] transition-colors duration-150 no-underline"
                 >
-                  <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" />
-                </svg>
-              </Link>
+                  <span>{primaryCtaText}</span>
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="translate-y-[-0.5px]"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="square"
+                      strokeLinejoin="miter"
+                    />
+                  </svg>
+                </Link>
+              )}
 
-              <Link
-                href={secondaryCtaLink}
-                className="inline-flex items-center justify-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 hover:text-white text-xs font-mono font-bold uppercase tracking-[0.16em] px-6 py-4 rounded-none border border-white/10 hover:border-white/25 transition-colors no-underline cursor-pointer select-none"
-              >
-                <span>{secondaryCtaText}</span>
-              </Link>
+              {secondaryCtaText && (
+                <Link
+                  href={secondaryCtaLink || "/portfolio"}
+                  className="inline-flex items-center justify-center gap-2.5 border border-white/20 hover:border-white hover:bg-white hover:text-black text-white text-xs font-bold uppercase tracking-[0.16em] font-display px-7 py-4 rounded-none transition-colors duration-150 no-underline"
+                >
+                  <span>{secondaryCtaText}</span>
+                </Link>
+              )}
             </div>
 
-            {/* Quick Capability Indicators */}
+            {/* Services Hero Statistics */}
             {showStats && (
-              <div className="grid grid-cols-3 gap-4 pt-8 mt-8 border-t border-white/[0.08] max-w-lg">
+              <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-5 mt-7 border-t border-white/[0.08] max-w-md">
                 <div>
-                  <span className="block font-display text-xl sm:text-2xl font-black text-white">{stat1Value}</span>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">{stat1Label}</span>
+                  <span className="block font-display text-lg sm:text-xl font-extrabold tracking-[-0.02em] text-white leading-tight">
+                    {stat1Value}
+                  </span>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                    {stat1Label}
+                  </span>
                 </div>
                 <div>
-                  <span className="block font-display text-xl sm:text-2xl font-black text-brand-red">{stat2Value}</span>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">{stat2Label}</span>
+                  <span className="block font-display text-lg sm:text-xl font-extrabold tracking-[-0.02em] text-brand-red leading-tight">
+                    {stat2Value}
+                  </span>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                    {stat2Label}
+                  </span>
                 </div>
                 <div>
-                  <span className="block font-display text-xl sm:text-2xl font-black text-brand-green">{stat3Value}</span>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">{stat3Label}</span>
+                  <span className="block font-display text-lg sm:text-xl font-extrabold tracking-[-0.02em] text-brand-green leading-tight">
+                    {stat3Value}
+                  </span>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                    {stat3Label}
+                  </span>
                 </div>
               </div>
             )}
           </motion.div>
 
-          {/* Right Column: Studio Banner Monitor Visual */}
-          {showWorkstation && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-              className="lg:col-span-5"
-            >
-              <div className="relative bg-[#0c0c0c] border border-white/15 p-2.5 sm:p-3 rounded-none shadow-2xl group">
-                {/* Top Studio Monitor Toolbar */}
-                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-white/[0.08] px-1 text-[10px] font-mono">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-red animate-pulse inline-block" />
-                    <span className="text-white font-bold uppercase tracking-wider">STUDIO BANNER // DISPLAY 01</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-neutral-400">
-                    <span className="text-brand-green">ACTIVE</span>
-                    <span className="text-white">HD / 4K</span>
-                  </div>
-                </div>
-
-                {/* Banner Monitor Frame (16:9 Aspect Ratio) */}
-                <div className="relative aspect-[16/9] w-full bg-[#141414] overflow-hidden border border-white/10 flex items-center justify-center">
-                  {bannerImageUrl && !imageError ? (
-                    <img
-                      key={bannerImageUrl}
-                      src={bannerImageUrl}
-                      alt={bannerAlt}
-                      onLoad={() => setImageLoaded(true)}
-                      onError={() => setImageError(true)}
-                      className={`w-full h-full object-cover transition-opacity duration-300 ${
-                        imageLoaded ? "opacity-100" : "opacity-90"
-                      }`}
-                      loading="eager"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-[#121212] via-[#161616] to-[#0c0c0c]">
-                      <div className="w-12 h-12 rounded-none border border-white/15 bg-white/[0.04] flex items-center justify-center mb-3 text-neutral-400">
-                        <svg
-                          className="w-6 h-6 text-neutral-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                          />
-                        </svg>
+          {/* 2. Right Column: Prominent, Larger Banner Carousel (~60–62% on Desktop, 4px Radius) */}
+          <div className="relative w-full lg:w-[60%] xl:w-[62%] shrink-0">
+            {hasBanners ? (
+              <div
+                data-testid="services-hero-banner-container"
+                className="relative w-full aspect-[1.68/1] sm:aspect-[1.7/1] min-h-[220px] sm:min-h-[320px] lg:min-h-[430px] xl:min-h-[470px] bg-[#080808] rounded-[4px] overflow-hidden select-none border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.65)]"
+              >
+                {/* Smooth Horizontal Right-to-Left Sliding Track */}
+                <div
+                  data-testid="services-hero-carousel-track"
+                  className="flex w-full h-full rounded-[4px] will-change-transform"
+                  style={{
+                    transform: `translate3d(-${effectiveTrackIndex * 100}%, 0, 0)`,
+                    transition: shouldAnimateSlide
+                      ? `transform ${transitionDurationMs}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                      : "none",
+                  }}
+                >
+                  {renderedSlides.map((banner, idx) => {
+                    const url = banner.imageUrl.trim();
+                    const slideKey = banner._isLoopClone
+                      ? `loop-clone-${banner.id || url}`
+                      : banner.id || `${url}-${idx}`;
+                    return (
+                      <div
+                        key={slideKey}
+                        className="relative w-full h-full min-w-full shrink-0 grow-0 basis-full overflow-hidden rounded-[4px] bg-[#080808]"
+                        aria-hidden={
+                          idx !== activeIndicatorIndex || Boolean(banner._isLoopClone)
+                        }
+                      >
+                        <img
+                          src={url}
+                          alt={
+                            banner._isLoopClone
+                              ? ""
+                              : banner.label || `Services Hero Banner ${idx + 1}`
+                          }
+                          loading="eager"
+                          decoding="async"
+                          fetchPriority={idx === 0 ? "high" : "auto"}
+                          onError={
+                            banner._isLoopClone
+                              ? undefined
+                              : () => handleBannerError(banner.id || url)
+                          }
+                          className="w-full h-full object-cover object-right rounded-[4px] select-none pointer-events-none"
+                        />
                       </div>
-                      <span className="text-xs font-mono font-bold uppercase tracking-widest text-neutral-300">
-                        DESIGNTOUCH+ STUDIO BANNER
-                      </span>
-                      <span className="text-[10px] font-mono text-neutral-500 mt-1 max-w-[220px]">
-                        Full-service creative production &amp; visual performance
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Overlaid Studio HUD Tag */}
-                  <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
-                    <span className="inline-flex items-center gap-1.5 bg-black/85 border border-white/15 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.16em] text-neutral-300">
-                      <span className="w-1.5 h-1.5 bg-brand-green rounded-none" aria-hidden="true" />
-                      STUDIO MONITOR
-                    </span>
-                  </div>
-
-                  <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
-                    <span className="inline-flex items-center bg-black/85 border border-white/15 px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider text-neutral-300">
-                      FRAME 01
-                    </span>
-                  </div>
+                    );
+                  })}
                 </div>
 
-                {/* Editorial Monitor Info Bar */}
-                <div className="mt-2.5 bg-[#121212] border border-white/[0.08] px-3 py-2 flex items-center justify-between text-[9px] font-mono text-neutral-400">
-                  <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-brand-red rounded-none" aria-hidden="true" />
-                    <span>STUDIO ASSET // HERO BANNER</span>
+                {/* Subtle left-edge feather into #080808 (keeps >95% of the studio image at 100% brightness) */}
+                <div
+                  className="absolute inset-y-0 left-0 w-7 sm:w-9 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, rgba(8,8,8,0.85) 0%, rgba(8,8,8,0.35) 50%, rgba(8,8,8,0) 100%)",
+                  }}
+                />
+
+                {/* 3. Synchronized Carousel Indicators (shown when > 1 active banner) */}
+                {activeBanners.length > 1 && (
+                  <div
+                    className="absolute bottom-3 right-3 sm:bottom-3.5 sm:right-4 z-20 flex items-center gap-2 bg-black/75 border border-white/15 rounded-[4px] px-2.5 py-1"
+                    role="tablist"
+                    aria-label="Hero banner slides"
+                  >
+                    {activeBanners.map((banner, idx) => {
+                      const isCurrent = idx === activeIndicatorIndex;
+                      return (
+                        <button
+                          key={banner.id || idx}
+                          type="button"
+                          role="tab"
+                          aria-selected={isCurrent}
+                          aria-label={`Show ${banner.label || `Banner ${idx + 1}`}`}
+                          onClick={() => {
+                            setIsInstantReset(false);
+                            setTrackIndex(idx);
+                          }}
+                          className={`h-1.5 transition-all duration-300 cursor-pointer border-0 p-0 ${
+                            isCurrent
+                              ? "w-6 bg-brand-red"
+                              : "w-2 bg-white/35 hover:bg-white/60"
+                          }`}
+                        />
+                      );
+                    })}
+                    <span className="ml-1 text-[9px] font-mono text-neutral-300 select-none">
+                      {activeIndicatorIndex + 1}/{activeBanners.length}
+                    </span>
                   </div>
-                  <span className="text-neutral-500 uppercase tracking-wider">
-                    {bannerImageUrl && !imageError ? "ACTIVE FEED" : "STANDBY / FALLBACK"}
+                )}
+              </div>
+            ) : (
+              /* Clean Editorial Dark Fallback when 0 active banners are configured */
+              <div className="relative w-full aspect-[1.68/1] sm:aspect-[1.7/1] min-h-[220px] sm:min-h-[320px] lg:min-h-[430px] xl:min-h-[470px] bg-[#0a0a0a] rounded-[4px] border border-white/10 overflow-hidden flex items-center justify-center select-none">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#0e0e0e] via-[#080808] to-[#050505]" />
+                <div className="relative z-10 flex flex-col items-center gap-1.5 text-center px-4">
+                  <span className="w-2 h-2 bg-brand-red rounded-[1px] inline-block" />
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500">
+                    DESIGNTOUCH+ // PRODUCTION STUDIO
                   </span>
                 </div>
               </div>
-            </motion.div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </section>

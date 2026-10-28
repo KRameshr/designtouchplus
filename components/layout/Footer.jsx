@@ -29,19 +29,42 @@ const SERVICES = [
 // prop — avoids a second client-side fetch for data we already have.
 const Footer = ({ companyInfo }) => {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+  const [status, setStatus] = useState("idle"); // idle | loading | success | duplicate | error
+  const [feedback, setFeedback] = useState("");
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!email) return;
+    const trimmed = (email || "").trim();
+    if (!trimmed || status === "loading") return;
 
     setStatus("loading");
+    setFeedback("");
     try {
-      await subscribeToNewsletter(email);
-      setStatus("success");
+      const result = await subscribeToNewsletter(trimmed);
+      if (result?.emailSent) {
+        setStatus("success");
+        setFeedback("Confirmation email sent — check your inbox!");
+      } else {
+        setStatus("unconfirmed");
+        setFeedback(
+          result?.message ||
+            "Subscribed! Note: Confirmation email delivery could not be completed by email provider."
+        );
+      }
       setEmail("");
-    } catch {
-      setStatus("error");
+    } catch (err) {
+      if (err.status === 409) {
+        setStatus("duplicate");
+        setFeedback(
+          err.message || "Already Subscribed — you're already on our list!"
+        );
+      } else if (err.status === 400) {
+        setStatus("error");
+        setFeedback(err.message || "Please enter a valid email address.");
+      } else {
+        setStatus("error");
+        setFeedback(err.message || "Something went wrong. Try again.");
+      }
     }
   };
 
@@ -147,10 +170,13 @@ const Footer = ({ companyInfo }) => {
               </button>
             </form>
             {status === "success" && (
-              <p className="text-brand-green text-xs mt-2">Subscribed — thank you!</p>
+              <p className="text-brand-green text-xs mt-2">{feedback}</p>
+            )}
+            {(status === "duplicate" || status === "unconfirmed") && (
+              <p className="text-amber-400 text-xs mt-2">{feedback}</p>
             )}
             {status === "error" && (
-              <p className="text-brand-red text-xs mt-2">Something went wrong. Try again.</p>
+              <p className="text-brand-red text-xs mt-2">{feedback}</p>
             )}
           </div>
         </div>

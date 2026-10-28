@@ -1,95 +1,89 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { getProcessIconMeta } from "@/lib/processIcons";
 
 const DEFAULT_PROCESS_STEPS = [
   {
+    numericStep: 1,
     stepNumber: "01",
-    title: "Discover",
-    description: "We analyze your brand voice, content goals, audience metrics, and raw source footage to establish a clear creative brief.",
+    title: "DISCOVER",
+    description: "We learn about your brand, goals and vision.",
     icon: "discover",
   },
   {
+    numericStep: 2,
     stepNumber: "02",
-    title: "Plan",
-    description: "We outline narrative arcs, pacing blueprints, sound design references, and milestone schedules before touching the edit.",
+    title: "PLAN",
+    description: "We brainstorm ideas and create a clear strategy.",
     icon: "plan",
   },
   {
+    numericStep: 3,
     stepNumber: "03",
-    title: "Create",
-    description: "Our dedicated editors and motion designers craft the assembly, rhythm, B-roll layering, custom graphics, and color grading.",
+    title: "CREATE",
+    description: "Our team brings your story to life with creativity.",
     icon: "create",
   },
   {
+    numericStep: 4,
     stepNumber: "04",
-    title: "Review",
-    description: "Structured feedback cycles let you review timecoded cuts and request precision adjustments until the final edit is dialed in.",
+    title: "REVIEW",
+    description: "We collaborate, refine and make it perfect.",
     icon: "review",
   },
   {
+    numericStep: 5,
     stepNumber: "05",
-    title: "Deliver",
-    description: "Master exports are prepared in 4K ProRes, YouTube landscape, and 9:16 vertical cuts, securely delivered and archived.",
+    title: "DELIVER",
+    description: "We deliver the final product that drives results.",
     icon: "deliver",
   },
 ];
 
-function StepIcon({ type }) {
-  switch (type) {
-    case "discover":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          <line x1="11" y1="8" x2="11" y2="14" />
-          <line x1="8" y1="11" x2="14" y2="11" />
-        </svg>
-      );
-    case "plan":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <rect x="3" y="3" width="18" height="18" rx="0" />
-          <path d="M3 9h18M9 21V9" />
-        </svg>
-      );
-    case "create":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
-          <path d="M20 4v4m2-2h-4" />
-        </svg>
-      );
-    case "review":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          <path d="M9 10h6M9 14h3" />
-        </svg>
-      );
-    case "deliver":
-    default:
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <line x1="22" y1="2" x2="11" y2="13" />
-          <polygon points="22 2 15 22 11 13 2 9 22 2" fill="none" />
-        </svg>
-      );
-  }
-}
-
 export default function ServicesProcess({ steps = [], content }) {
+  const prefersReducedMotion = useReducedMotion();
+
   const renderedSteps = useMemo(() => {
     if (Array.isArray(steps) && steps.length > 0) {
-      return steps.map((step, idx) => ({
-        stepNumber: String(step.stepNumber ?? idx + 1).padStart(2, "0"),
-        title: step.title?.replace(/^\d+\.\s*/, "") || `Phase ${idx + 1}`,
-        description: step.description || "",
-        icon: step.icon || DEFAULT_PROCESS_STEPS[idx % DEFAULT_PROCESS_STEPS.length]?.icon || "discover",
-      }));
+      return steps.map((step, idx) => {
+        const numericStep = Number(step.stepNumber) || idx + 1;
+        const cleanTitle =
+          (step.title || "")
+            .replace(/^\d+\.\s*/, "")
+            .trim() || `STEP ${numericStep}`;
+        const iconMeta = getProcessIconMeta(
+          step.icon,
+          cleanTitle,
+          numericStep
+        );
+
+        return {
+          id: step.id || `${numericStep}-${cleanTitle}`,
+          numericStep,
+          stepNumber: String(numericStep).padStart(2, "0"),
+          title: cleanTitle,
+          description: step.description || "",
+          icon: iconMeta.key,
+          iconSrc: iconMeta.src,
+        };
+      });
     }
-    return DEFAULT_PROCESS_STEPS;
+
+    return DEFAULT_PROCESS_STEPS.map((step) => {
+      const iconMeta = getProcessIconMeta(
+        step.icon,
+        step.title,
+        step.numericStep
+      );
+      return {
+        ...step,
+        id: `${step.numericStep}-${step.title}`,
+        icon: iconMeta.key,
+        iconSrc: iconMeta.src,
+      };
+    });
   }, [steps]);
 
   const eyebrow = content?.processEyebrow || "HOW WE WORK // METHODOLOGY";
@@ -98,19 +92,37 @@ export default function ServicesProcess({ steps = [], content }) {
     content?.processDescription ||
     "A structured five-step production workflow built for creative alignment, swift turnaround, and measurable results.";
 
+  const desktopGridCols =
+    renderedSteps.length === 5
+      ? "lg:grid-cols-5"
+      : renderedSteps.length === 4
+      ? "lg:grid-cols-4"
+      : renderedSteps.length === 3
+      ? "lg:grid-cols-3"
+      : "lg:grid-cols-5";
+
   return (
-    <section className="bg-[#080808] text-white px-4 sm:px-6 py-16 sm:py-24 border-b border-white/[0.08]">
+    <section
+      aria-labelledby="services-process-heading"
+      className="bg-[#080808] text-white px-4 sm:px-6 py-16 sm:py-24 border-b border-white/[0.08] overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto">
         {/* Section Heading */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12 sm:mb-16 pb-6 border-b border-white/[0.08]">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14 sm:mb-20 pb-6 border-b border-white/[0.08]">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0" aria-hidden="true" />
+            <div className="flex items-center gap-2.5 mb-2.5">
+              <span
+                className="w-2.5 h-2.5 bg-brand-red rounded-full inline-block shrink-0"
+                aria-hidden="true"
+              />
               <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.24em] text-neutral-400">
                 {eyebrow}
               </span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white">
+            <h2
+              id="services-process-heading"
+              className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-[-0.03em] text-white"
+            >
               {heading}
             </h2>
           </div>
@@ -119,62 +131,87 @@ export default function ServicesProcess({ steps = [], content }) {
           </p>
         </div>
 
-        {/* Desktop Horizontal Process Timeline */}
-        <div className="relative">
-          {/* Subtle horizontal connecting line on desktop */}
-          <div className="hidden lg:block absolute top-7 left-12 right-12 h-px bg-white/15 z-0" aria-hidden="true" />
+        {/* Client Reference-Matched Process Timeline */}
+        <ol
+          className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${desktopGridCols} gap-y-10 sm:gap-y-12 sm:gap-x-8 lg:gap-6 xl:gap-8 list-none p-0 m-0`}
+        >
+          {renderedSteps.map((step, index) => {
+            const isLast = index === renderedSteps.length - 1;
 
-          <div
-            className={`grid grid-cols-1 sm:grid-cols-2 ${
-              renderedSteps.length === 5
-                ? "lg:grid-cols-5"
-                : renderedSteps.length === 4
-                ? "lg:grid-cols-4"
-                : renderedSteps.length === 3
-                ? "lg:grid-cols-3"
-                : "lg:grid-cols-4"
-            } gap-6 sm:gap-6 relative z-10`}
-          >
-            {renderedSteps.map((step, index) => (
-              <motion.div
-                key={step.stepNumber + step.title}
-                initial={{ opacity: 0, y: 16 }}
+            return (
+              <motion.li
+                key={step.id}
+                initial={
+                  prefersReducedMotion
+                    ? { opacity: 1, y: 0 }
+                    : { opacity: 0, y: 16 }
+                }
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.35, delay: index * 0.06 }}
-                className="bg-[#0c0c0c] border border-white/10 hover:border-white/30 p-6 flex flex-col justify-between group transition-all duration-300 rounded-none relative"
+                transition={
+                  prefersReducedMotion
+                    ? { duration: 0 }
+                    : { duration: 0.38, delay: index * 0.06, ease: "easeOut" }
+                }
+                className="group relative flex flex-col items-center text-center"
               >
-                {/* Step Marker Badge */}
-                <div>
-                  <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/[0.06]">
-                    <span className="text-xs font-mono font-bold uppercase tracking-widest text-brand-red">
-                      {step.stepNumber} //
-                    </span>
-                    <div className="w-10 h-10 bg-[#141414] border border-white/15 group-hover:border-brand-red text-neutral-300 group-hover:text-white flex items-center justify-center transition-colors">
-                      <StepIcon type={step.icon} />
-                    </div>
+                {/* Horizontal Dotted Connector + Red Dot (Desktop between step i and i+1) */}
+                {!isLast && (
+                  <div
+                    aria-hidden="true"
+                    className="hidden lg:flex items-center justify-center absolute top-[46px] -translate-y-1/2 left-[calc(50%+50px)] w-[calc(100%+24px-100px)] xl:w-[calc(100%+32px-100px)] pointer-events-none z-0"
+                  >
+                    <span className="w-full border-t border-dashed border-white/25 group-hover:border-white/45 transition-colors duration-200" />
+                    <span
+                      className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-brand-red shadow-[0_0_8px_rgba(239,68,68,0.45)] transition-transform duration-200 ${
+                        prefersReducedMotion ? "" : "group-hover:scale-125"
+                      }`}
+                    />
                   </div>
+                )}
 
-                  {/* Step Title */}
-                  <h3 className="font-display text-lg font-bold uppercase tracking-tight text-white mb-2.5">
-                    {step.title}
-                  </h3>
-
-                  {/* Step Description */}
-                  <p className="text-xs text-neutral-400 font-sans leading-relaxed">
-                    {step.description}
-                  </p>
+                {/* Circular Outline Icon Container */}
+                <div
+                  tabIndex={0}
+                  className={`relative z-10 w-20 h-20 sm:w-[88px] sm:h-[88px] lg:w-[92px] lg:h-[92px] rounded-full bg-[#0b0b0b] border border-white/20 group-hover:border-brand-red/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/70 flex items-center justify-center mb-6 transition-[transform,border-color,background-color,box-shadow] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-[#111111] group-hover:shadow-[0_10px_28px_-10px_rgba(239,68,68,0.22)] ${
+                    prefersReducedMotion ? "" : "group-hover:-translate-y-1"
+                  }`}
+                >
+                  <img
+                    src={step.iconSrc}
+                    alt={`${step.title} step icon`}
+                    width={38}
+                    height={38}
+                    className={`w-9 h-9 sm:w-[38px] sm:h-[38px] object-contain select-none opacity-95 group-hover:opacity-100 transition-transform duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                      prefersReducedMotion ? "" : "group-hover:scale-[1.06]"
+                    }`}
+                  />
                 </div>
 
-                {/* Bottom Step Indicator Bar */}
-                <div className="mt-6 pt-3 border-t border-white/[0.05] flex items-center justify-between text-[10px] font-mono text-neutral-500">
-                  <span className="uppercase tracking-wider">PHASE {step.stepNumber}</span>
-                  <span className="text-neutral-400 group-hover:text-brand-red transition-colors">● ACTIVE</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                {/* Centered Step Number + Title */}
+                <h3 className="font-display text-sm sm:text-[15px] font-bold uppercase tracking-[0.04em] text-white mb-2.5 leading-snug">
+                  {step.numericStep}. {step.title}
+                </h3>
+
+                {/* Centered Step Description */}
+                <p className="text-xs sm:text-[13px] text-neutral-400 font-sans leading-[1.6] max-w-[220px] mx-auto">
+                  {step.description}
+                </p>
+
+                {/* Mobile Vertical Dotted Connector + Red Dot */}
+                {!isLast && (
+                  <div
+                    aria-hidden="true"
+                    className="flex sm:hidden items-center justify-center relative h-9 mt-6 pointer-events-none"
+                  >
+                    <span className="h-full border-l border-dashed border-white/25" />
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-brand-red shadow-[0_0_6px_rgba(239,68,68,0.45)]" />
+                  </div>
+                )}
+              </motion.li>
+            );
+          })}
+        </ol>
       </div>
     </section>
   );

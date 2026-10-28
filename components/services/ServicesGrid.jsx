@@ -2,243 +2,335 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+import {
+  REFERENCE_THEME_SEQUENCE,
+  ServiceOutlineIcon,
+  resolveServiceIconKey,
+  resolveServiceTheme,
+} from "@/lib/serviceIcons";
 
 // Standard 8 reference services matching the DesignTouch+ catalog
-const REFERENCE_SERVICES = [
+export const REFERENCE_SERVICES = [
   {
     orderNumber: "01",
     title: "Video Editing",
     slug: "video-editing",
-    description: "Engaging edits for YouTube, social media, ads, podcasts, and digital campaigns.",
+    description:
+      "Engaging edits for YouTube, social media, ads, podcasts and more.",
     features: [
-      "Long-form & Short-form Cuts",
-      "Dynamic Pacing & Retention Flow",
-      "Podcast & Interview Editing",
-      "Cinematic Color Grading",
+      "Long-form Editing",
+      "Short-form / Reels",
+      "Podcast Editing",
+      "Color Grading",
     ],
     iconType: "video",
+    colorTheme: "red",
     ctaLabel: "LEARN MORE",
-    ctaUrl: "/contact?service=Video%20Editing",
+    ctaUrl: "/services/video-editing",
   },
   {
     orderNumber: "02",
     title: "Motion Graphics",
     slug: "motion-graphics",
-    description: "Stunning motion graphics that explain, engage, and elevate your core narrative.",
+    description:
+      "Stunning motion graphics that explain, engage and elevate your message.",
     features: [
-      "2D & 3D Title Animation",
-      "Explainer Video Sequences",
-      "Logo Idents & Sound Stings",
-      "Kinetic Typography Packs",
+      "2D/3D Animation",
+      "Explainer Videos",
+      "Logo Animation",
+      "Kinetic Typography",
     ],
     iconType: "motion",
+    colorTheme: "green",
     ctaLabel: "LEARN MORE",
-    ctaUrl: "/contact?service=Motion%20Graphics",
+    ctaUrl: "/services/motion-graphics",
   },
   {
     orderNumber: "03",
     title: "Social Media Content",
     slug: "social-media-content",
-    description: "Scroll-stopping vertical video designed to capture attention and scale reach.",
+    description:
+      "Scroll-stopping content designed to grow your brand and boost engagement.",
     features: [
-      "Instagram Reels & TikToks",
-      "YouTube Shorts Optimization",
-      "Viral Hook Formatting",
-      "Animated Captions & B-Roll",
+      "Instagram Reels",
+      "YouTube Shorts",
+      "TikTok Videos",
+      "Ad Creatives",
     ],
     iconType: "social",
+    colorTheme: "violet",
     ctaLabel: "LEARN MORE",
-    ctaUrl: "/contact?service=Social%20Media%20Content",
+    ctaUrl: "/services/social-media-content",
   },
   {
     orderNumber: "04",
     title: "YouTube Management",
     slug: "youtube-management",
-    description: "End-to-end channel operations to optimize algorithm performance and view counts.",
+    description:
+      "End-to-end YouTube solutions to grow your channel and maximize views.",
     features: [
-      "Upload Schedule & Publishing",
-      "High-CTR Title Strategies",
-      "Audience Retention Audits",
-      "Community & Tag SEO",
+      "Video Editing",
+      "Thumbnails",
+      "SEO & Optimization",
+      "Channel Growth",
     ],
     iconType: "youtube",
+    colorTheme: "orange",
     ctaLabel: "LEARN MORE",
-    ctaUrl: "/contact?service=YouTube%20Management",
+    ctaUrl: "/services/youtube-management",
   },
   {
     orderNumber: "05",
     title: "Graphic Design",
     slug: "graphic-design",
-    description: "High-impact visual designs that communicate your brand message with authority.",
+    description:
+      "Creative designs that communicate your brand identity with impact.",
     features: [
-      "Social Media Carousels",
-      "Marketing Banners & Post Art",
-      "Pitch Decks & Presentation Kits",
-      "Advertising Creative Suites",
+      "Social Media Posts",
+      "Banners & Posters",
+      "Brand Identity",
+      "Marketing Materials",
     ],
     iconType: "graphic",
+    colorTheme: "cyan",
     ctaLabel: "LEARN MORE",
-    ctaUrl: "/contact?service=Graphic%20Design",
+    ctaUrl: "/services/graphic-design",
   },
   {
     orderNumber: "06",
     title: "Thumbnail Design",
     slug: "thumbnail-design",
-    description: "High-CTR, psychology-driven custom thumbnails engineered for peak click rates.",
+    description:
+      "High CTR thumbnails that attract clicks and increase engagement.",
     features: [
-      "High-CTR Visual Formulas",
-      "3D Typography & Bold Callouts",
-      "Face Retouching & Expression Pop",
-      "A/B Split Test Ready Files",
+      "YouTube Thumbnails",
+      "Custom Designs",
+      "A/B Testing Thumbnails",
+      "Series Thumbnails",
     ],
     iconType: "thumbnail",
+    colorTheme: "yellow",
     ctaLabel: "LEARN MORE",
-    ctaUrl: "/contact?service=Thumbnail%20Design",
+    ctaUrl: "/services/thumbnail-design",
   },
   {
     orderNumber: "07",
     title: "Branding",
     slug: "branding",
-    description: "Cohesive brand identities that distinguish your studio from competitors.",
+    description:
+      "Build a strong brand identity that makes you stand out from the competition.",
     features: [
-      "Logo System & Variations",
-      "Color Palettes & Typography",
-      "Brand Guidelines Manual",
-      "Social Media Kit Assets",
+      "Logo Design",
+      "Brand Guidelines",
+      "Brand Strategy",
+      "Visual Identity",
     ],
     iconType: "branding",
+    colorTheme: "pink",
     ctaLabel: "LEARN MORE",
-    ctaUrl: "/contact?service=Branding",
+    ctaUrl: "/services/branding",
   },
   {
     orderNumber: "08",
     title: "Commercial & Ads",
     slug: "commercial-ads",
-    description: "Commercial-grade video assets structured specifically for paid conversion.",
+    description:
+      "High-converting video ads that drive traffic, leads and real results.",
     features: [
-      "Direct Response Ad Cuts",
-      "Multi-Ratio Ad Adaptations",
-      "Product Demo & Explainer Ads",
-      "Sound Design & Voice Mixing",
+      "Product Ads",
+      "Promotional Videos",
+      "Corporate Videos",
+      "UGC-style Ads",
     ],
     iconType: "commercial",
+    colorTheme: "green",
     ctaLabel: "LEARN MORE",
-    ctaUrl: "/contact?service=Commercial%20%26%20Ads",
+    ctaUrl: "/services/commercial-ads",
   },
 ];
 
-// Clean inline geometric icons (no lucide runtime dependencies)
-function ServiceIcon({ type }) {
-  switch (type) {
-    case "video":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square">
-          <rect x="2" y="2" width="20" height="20" rx="0" />
-          <line x1="7" y1="2" x2="7" y2="22" />
-          <line x1="17" y1="2" x2="17" y2="22" />
-          <line x1="2" y1="12" x2="22" y2="12" />
-          <line x1="2" y1="7" x2="7" y2="7" />
-          <line x1="2" y1="17" x2="7" y2="17" />
-          <line x1="17" y1="7" x2="22" y2="7" />
-          <line x1="17" y1="17" x2="22" y2="17" />
-        </svg>
-      );
-    case "motion":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square">
-          <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
-        </svg>
-      );
-    case "social":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square">
-          <rect x="5" y="2" width="14" height="20" rx="0" />
-          <line x1="12" y1="18" x2="12.01" y2="18" strokeWidth="2.5" />
-        </svg>
-      );
-    case "youtube":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square">
-          <rect x="2" y="4" width="20" height="16" rx="0" />
-          <polygon points="10 9 15 12 10 15 10 9" fill="currentColor" />
-        </svg>
-      );
-    case "graphic":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square">
-          <path d="M12 19l7-7 3 3-7 7-3-3z" />
-          <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
-          <circle cx="11" cy="11" r="2" />
-        </svg>
-      );
-    case "thumbnail":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square">
-          <rect x="3" y="3" width="18" height="18" rx="0" />
-          <circle cx="8.5" cy="8.5" r="1.5" />
-          <polyline points="21 15 16 10 5 21" />
-        </svg>
-      );
-    case "branding":
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square">
-          <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-          <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-          <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-          <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-        </svg>
-      );
-    case "commercial":
-    default:
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square">
-          <rect x="2" y="3" width="20" height="14" rx="0" />
-          <line x1="8" y1="21" x2="16" y2="21" />
-          <line x1="12" y1="17" x2="12" y2="21" />
-        </svg>
-      );
+export function normalizeServicesList(services = []) {
+  if (Array.isArray(services) && services.length > 0) {
+    return services
+      .filter((s) => s && s.isActive !== false)
+      .map((s, idx) => {
+        const slug =
+          s.slug ||
+          String(s.title || "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+        return {
+          id: s.id || slug || `${idx}`,
+          orderNumber: s.orderNumber || String(idx + 1).padStart(2, "0"),
+          title: s.title,
+          slug,
+          description: s.shortDescription || s.description || "",
+          fullDescription: s.fullDescription || s.description || "",
+          features: Array.isArray(s.features) ? s.features : [],
+          iconType: resolveServiceIconKey(s.icon || s.iconType, slug, s.title),
+          colorTheme:
+            s.colorTheme ||
+            REFERENCE_THEME_SEQUENCE[idx % REFERENCE_THEME_SEQUENCE.length],
+          ctaLabel: s.ctaLabel || "LEARN MORE",
+          ctaUrl:
+            s.ctaUrl && String(s.ctaUrl).trim()
+              ? String(s.ctaUrl).trim()
+              : slug
+              ? `/services/${slug}`
+              : `/contact?service=${encodeURIComponent(s.title || "")}`,
+        };
+      });
   }
+  return REFERENCE_SERVICES;
+}
+
+export function ServiceCard({ service, index, prefersReducedMotion = false }) {
+  const theme = resolveServiceTheme(service.colorTheme, index);
+  const displayNumber =
+    service.orderNumber || String(index + 1).padStart(2, "0");
+  const detailHref =
+    service.ctaUrl ||
+    (service.slug
+      ? `/services/${service.slug}`
+      : `/contact?service=${encodeURIComponent(service.title || "")}`);
+
+  return (
+    <motion.div
+      initial={
+        prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }
+      }
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={
+        prefersReducedMotion
+          ? { duration: 0 }
+          : { duration: 0.36, delay: index * 0.045, ease: "easeOut" }
+      }
+      className="h-full min-w-0"
+    >
+      <article
+        id={service.slug || undefined}
+        className={`group relative h-full min-w-0 overflow-hidden bg-[#0a0a0a] hover:bg-[#0e0e0e] border border-white/[0.1] ${theme.cardHover} rounded-[12px] p-6 sm:p-7 flex flex-col justify-between transition-[transform,background-color,border-color,box-shadow] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          prefersReducedMotion ? "" : "hover:-translate-y-1"
+        }`}
+      >
+        {/* Subtle top-left radial accent glow on hover */}
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute -top-12 -left-12 w-36 h-36 rounded-full bg-gradient-to-br ${theme.ambientGlow} to-transparent blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-[240ms]`}
+        />
+
+        <div className="relative z-10 flex flex-col flex-1 min-w-0">
+          {/* Top Row: Large Custom Outline Icon (Left) + Subtle Service Number 01-08 (Right) */}
+          <div className="flex items-start justify-between gap-3 mb-6">
+            <div
+              className={`${theme.iconText} shrink-0 transition-transform duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                prefersReducedMotion
+                  ? ""
+                  : "group-hover:scale-[1.06] group-hover:-translate-y-0.5"
+              }`}
+            >
+              <ServiceOutlineIcon
+                iconKey={service.iconType}
+                className="w-11 h-11 sm:w-[48px] sm:h-[48px]"
+              />
+            </div>
+
+            <span
+              aria-hidden="true"
+              className="font-display text-[40px] sm:text-[44px] font-extrabold leading-none tracking-[-0.03em] text-white/[0.06] group-hover:text-white/[0.1] select-none transition-colors duration-[240ms]"
+            >
+              {displayNumber}
+            </span>
+          </div>
+
+          {/* Uppercase Service Title */}
+          <h3 className="font-display text-[15px] sm:text-base font-bold uppercase tracking-[0.02em] text-white leading-snug mb-3 break-words">
+            {service.title}
+          </h3>
+
+          {/* Readable Short Description */}
+          <p className="text-[13px] sm:text-[13.5px] text-neutral-400 font-sans leading-[1.6] mb-5 break-words">
+            {service.description}
+          </p>
+
+          {/* Key Feature Bullets Matching Service Accent Color */}
+          {Array.isArray(service.features) && service.features.length > 0 && (
+            <ul className="space-y-2 mt-auto mb-7 list-none p-0 m-0">
+              {service.features.map((feature, fIndex) => (
+                <li
+                  key={fIndex}
+                  className="flex items-center gap-2.5 text-[12.5px] sm:text-[13px] font-sans text-neutral-300 leading-snug"
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 inline-block ${theme.bullet}`}
+                    aria-hidden="true"
+                  />
+                  <span className="min-w-0 break-words">{feature}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Prominent Color-Matched LEARN MORE → Link */}
+        <div className="relative z-10 pt-1">
+          <Link
+            href={detailHref}
+            className={`inline-flex items-center gap-2 text-xs font-display font-bold uppercase tracking-[0.08em] ${theme.ctaText} focus-visible:outline-none focus-visible:ring-2 rounded-[2px] transition-colors duration-[220ms] no-underline select-none`}
+            aria-label={`Learn more about ${service.title}`}
+          >
+            <span>{service.ctaLabel || "LEARN MORE"}</span>
+            <ArrowRight
+              className={`w-4 h-4 ${
+                prefersReducedMotion
+                  ? ""
+                  : "transition-transform duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1"
+              }`}
+              strokeWidth={2.25}
+              aria-hidden="true"
+            />
+          </Link>
+        </div>
+      </article>
+    </motion.div>
+  );
 }
 
 export default function ServicesGrid({ services = [], content }) {
-  // If dynamic active services are present, render them in their defined order.
-  // Otherwise, fallback gracefully to the 8 canonical reference cards.
-  const activeServices = useMemo(() => {
-    if (Array.isArray(services) && services.length > 0) {
-      return services.map((s, idx) => ({
-        orderNumber: s.orderNumber || String(idx + 1).padStart(2, "0"),
-        title: s.title,
-        slug: s.slug,
-        description: s.shortDescription || s.description || "",
-        features: Array.isArray(s.features) ? s.features : [],
-        iconType: s.icon || "video",
-        ctaLabel: s.ctaLabel || "LEARN MORE",
-        ctaUrl: s.ctaUrl || `/contact?service=${encodeURIComponent(s.title)}`,
-      }));
-    }
-    return REFERENCE_SERVICES;
-  }, [services]);
+  const prefersReducedMotion = useReducedMotion();
 
-  const eyebrow = content?.servicesEyebrow || "WHAT WE DO // PORTFOLIO DISCIPLINES";
+  const activeServices = useMemo(
+    () => normalizeServicesList(services),
+    [services]
+  );
+
+  const eyebrow =
+    content?.servicesEyebrow || "WHAT WE DO // PORTFOLIO DISCIPLINES";
   const heading = content?.servicesHeading || "OUR SERVICES";
   const description =
     content?.servicesDescription ||
     "High-quality creative services tailored to your brand’s unique needs. Engineered for digital retention and commercial performance.";
 
   return (
-    <section className="bg-[#080808] text-white px-4 sm:px-6 py-16 sm:py-24 border-b border-white/[0.08]">
+    <section className="bg-[#080808] text-white px-4 sm:px-6 py-16 sm:py-24 border-b border-white/[0.08] overflow-x-clip">
       <div className="max-w-7xl mx-auto">
-        {/* Section Heading matching DesignTouch+ specification */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12 sm:mb-16 pb-6 border-b border-white/[0.08]">
+        {/* Section Heading */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12 sm:mb-14 pb-6 border-b border-white/[0.08]">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0" aria-hidden="true" />
+            <div className="flex items-center gap-2 mb-2.5">
+              <span
+                className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0"
+                aria-hidden="true"
+              />
               <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.24em] text-neutral-400">
                 {eyebrow}
               </span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white">
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-[-0.03em] text-white">
               {heading}
             </h2>
           </div>
@@ -247,77 +339,16 @@ export default function ServicesGrid({ services = [], content }) {
           </p>
         </div>
 
-        {/* Dynamic Services Grid */}
+        {/* Client Reference-Matched 8-Card Services Grid (1 col mobile, 2 col tablet, 4 col desktop) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-          {activeServices.map((service, index) => {
-            return (
-              <motion.div
-                key={service.slug || service.title || index}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.35, delay: index * 0.04 }}
-                className="bg-[#0c0c0c] border border-white/10 hover:border-white/30 p-6 sm:p-7 flex flex-col justify-between group transition-all duration-300 relative rounded-none hover:bg-[#101010]"
-              >
-                {/* Top Row: Number & Icon */}
-                <div>
-                  <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
-                    <span className="text-xs font-mono font-bold uppercase tracking-widest text-neutral-500 group-hover:text-brand-red transition-colors">
-                      {service.orderNumber}
-                    </span>
-                    <div className="w-10 h-10 bg-white/[0.03] border border-white/10 flex items-center justify-center text-neutral-300 group-hover:text-white group-hover:border-white/30 transition-colors">
-                      <ServiceIcon type={service.iconType} />
-                    </div>
-                  </div>
-
-                  {/* Service Title */}
-                  <h3 className="font-display text-lg sm:text-xl font-bold uppercase tracking-tight text-white mt-5 mb-2.5 group-hover:text-white transition-colors">
-                    {service.title}
-                  </h3>
-
-                  {/* Short Description */}
-                  <p className="text-xs text-neutral-400 font-sans leading-relaxed mb-5">
-                    {service.description}
-                  </p>
-
-                  {/* Key Feature Bullets */}
-                  {Array.isArray(service.features) && service.features.length > 0 && (
-                    <ul className="space-y-2 mb-6 list-none p-0 m-0">
-                      {service.features.map((feature, fIndex) => (
-                        <li key={fIndex} className="flex items-start gap-2 text-[11px] font-mono text-neutral-300">
-                          <span className="w-1 h-1 bg-brand-red mt-1.5 shrink-0 inline-block" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                {/* Bottom Action: Dynamic CTA label & destination */}
-                <div className="pt-4 border-t border-white/[0.06] mt-4">
-                  <Link
-                    href={service.ctaUrl || `/contact?service=${encodeURIComponent(service.title)}`}
-                    className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.14em] text-neutral-400 group-hover:text-white transition-colors no-underline select-none"
-                    aria-label={`Inquire about ${service.title}`}
-                  >
-                    <span>{service.ctaLabel || "LEARN MORE"}</span>
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 12 12"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="transition-transform group-hover:translate-x-1"
-                      aria-hidden="true"
-                    >
-                      <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" />
-                    </svg>
-                  </Link>
-                </div>
-              </motion.div>
-            );
-          })}
+          {activeServices.map((service, index) => (
+            <ServiceCard
+              key={service.id || service.slug || service.title || index}
+              service={service}
+              index={index}
+              prefersReducedMotion={prefersReducedMotion}
+            />
+          ))}
         </div>
       </div>
     </section>

@@ -13,6 +13,7 @@ import {
   Quote,
   Users,
   Building2,
+  Tag,
   Menu,
   X,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { label: "Portfolio", href: "/admin/portfolio", icon: Film },
   { label: "Blog", href: "/admin/blog", icon: FileText },
   { label: "Services", href: "/admin/services", icon: Sparkles },
+  { label: "Pricing", href: "/admin/pricing", icon: Tag },
   { label: "Testimonials", href: "/admin/testimonials", icon: Quote },
   { label: "Team", href: "/admin/team", icon: Users },
   { label: "Clients", href: "/admin/clients", icon: Building2 },

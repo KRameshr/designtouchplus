@@ -1,103 +1,108 @@
 "use client";
 
-import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  TOOL_ICON_OPTIONS,
+  getToolMonogram,
+  resolveToolIconMeta,
+} from "@/lib/toolIcons";
 
-const CANONICAL_TOOLS = [
-  {
-    name: "Adobe Premiere Pro",
-    shortCode: "Pr",
-    role: "NLE & Timeline Assembly",
-    badgeColor: "border-[#9999FF]/40 text-[#9999FF] bg-[#9999FF]/10",
-  },
-  {
-    name: "After Effects",
-    shortCode: "Ae",
-    role: "Motion & Visual Effects",
-    badgeColor: "border-[#D291FF]/40 text-[#D291FF] bg-[#D291FF]/10",
-  },
-  {
-    name: "DaVinci Resolve",
-    shortCode: "Dv",
-    role: "Color Grading & Mastering",
-    badgeColor: "border-[#FF5555]/40 text-[#FF7777] bg-[#FF5555]/10",
-  },
-  {
-    name: "Photoshop",
-    shortCode: "Ps",
-    role: "Thumbnail & Raster Art",
-    badgeColor: "border-[#31A8FF]/40 text-[#31A8FF] bg-[#31A8FF]/10",
-  },
-  {
-    name: "Illustrator",
-    shortCode: "Ai",
-    role: "Vector Graphics & Branding",
-    badgeColor: "border-[#FF9A00]/40 text-[#FF9A00] bg-[#FF9A00]/10",
-  },
-  {
-    name: "Blender",
-    shortCode: "3D",
-    role: "3D Animation & Assets",
-    badgeColor: "border-[#EA7600]/40 text-[#EA7600] bg-[#EA7600]/10",
-  },
-  {
-    name: "Figma",
-    shortCode: "Fg",
-    role: "Storyboards & UI Layout",
-    badgeColor: "border-[#0ACF83]/40 text-[#0ACF83] bg-[#0ACF83]/10",
-  },
-];
+const CANONICAL_TOOLS = TOOL_ICON_OPTIONS.map((opt, idx) => ({
+  id: opt.key,
+  name: opt.label,
+  shortCode: opt.shortCode,
+  logoUrl: opt.src,
+  iconSrc: opt.src,
+  iconFilename: opt.filename,
+  hasIcon: true,
+  role: "Creative Tool",
+  displayOrder: idx + 1,
+}));
 
-const COLOR_MAP = {
-  Pr: "border-[#9999FF]/40 text-[#9999FF] bg-[#9999FF]/10",
-  Ae: "border-[#D291FF]/40 text-[#D291FF] bg-[#D291FF]/10",
-  Dv: "border-[#FF5555]/40 text-[#FF7777] bg-[#FF5555]/10",
-  Ps: "border-[#31A8FF]/40 text-[#31A8FF] bg-[#31A8FF]/10",
-  Ai: "border-[#FF9A00]/40 text-[#FF9A00] bg-[#FF9A00]/10",
-  "3D": "border-[#EA7600]/40 text-[#EA7600] bg-[#EA7600]/10",
-  Fg: "border-[#0ACF83]/40 text-[#0ACF83] bg-[#0ACF83]/10",
-};
+function ToolBadgeIcon({ tool, prefersReducedMotion }) {
+  const [failedSrc, setFailedSrc] = useState(null);
+  const showImage =
+    Boolean(tool.hasIcon && tool.iconSrc) && failedSrc !== tool.iconSrc;
+
+  if (showImage) {
+    return (
+      <img
+        src={tool.iconSrc}
+        alt={`${tool.name} application icon`}
+        width={40}
+        height={40}
+        onError={() => setFailedSrc(tool.iconSrc)}
+        className={`w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 select-none transition-transform duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          prefersReducedMotion ? "" : "group-hover:scale-[1.06]"
+        }`}
+      />
+    );
+  }
+
+  return (
+    <span
+      aria-hidden="true"
+      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[9px] bg-[#141414] border border-white/15 flex items-center justify-center shrink-0 select-none font-mono text-xs sm:text-[13px] font-bold tracking-tight text-neutral-100 transition-transform duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        prefersReducedMotion ? "" : "group-hover:scale-[1.06]"
+      }`}
+    >
+      {getToolMonogram(tool.shortCode, tool.name)}
+    </span>
+  );
+}
 
 export default function ToolsRow({ tools = [], content }) {
+  const prefersReducedMotion = useReducedMotion();
+
   const renderedTools = useMemo(() => {
     if (Array.isArray(tools) && tools.length > 0) {
       return tools.map((t, idx) => {
-        const code = t.iconKey || t.name.slice(0, 2);
+        const iconMeta = resolveToolIconMeta(t);
         return {
+          id: t.id || `${t.name}-${idx}`,
           name: t.name,
-          shortCode: code,
+          shortCode: getToolMonogram(t.iconKey, t.name || iconMeta.shortCode),
           role: t.role || "Creative Tool",
           websiteUrl: t.websiteUrl,
-          badgeColor:
-            COLOR_MAP[code] ||
-            (idx % 2 === 0
-              ? "border-brand-red/40 text-brand-red bg-brand-red/10"
-              : "border-brand-green/40 text-brand-green bg-brand-green/10"),
+          iconSrc: iconMeta.src,
+          iconFilename: iconMeta.filename,
+          hasIcon: iconMeta.hasIcon,
         };
       });
     }
     return CANONICAL_TOOLS;
   }, [tools]);
 
-  const eyebrow = content?.toolsEyebrow || "PRODUCTION STACK // HARDWARE & SOFTWARE";
+  const eyebrow =
+    content?.toolsEyebrow || "PRODUCTION STACK // HARDWARE & SOFTWARE";
   const heading = content?.toolsHeading || "TOOLS WE USE";
   const description =
     content?.toolsDescription ||
     "Industry-standard software suites power every frame, cut, grade, and render we produce for our clients.";
 
   return (
-    <section className="bg-[#080808] text-white px-4 sm:px-6 py-16 sm:py-20 border-b border-white/[0.08]">
-      <div className="max-w-7xl mx-auto">
+    <section
+      aria-labelledby="services-tools-heading"
+      className="bg-[#080808] text-white px-4 sm:px-6 py-16 sm:py-20 border-b border-white/[0.08] overflow-x-clip"
+    >
+      <div className="max-w-7xl mx-auto min-w-0">
         {/* Section Heading */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 pb-6 border-b border-white/[0.08]">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0" aria-hidden="true" />
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 sm:mb-12 pb-6 border-b border-white/[0.08]">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2.5 mb-2">
+              <span
+                className="w-2.5 h-2.5 bg-brand-red rounded-full inline-block shrink-0"
+                aria-hidden="true"
+              />
               <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.24em] text-neutral-400">
                 {eyebrow}
               </span>
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
+            <h2
+              id="services-tools-heading"
+              className="font-display text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight text-white"
+            >
               {heading}
             </h2>
           </div>
@@ -106,59 +111,62 @@ export default function ToolsRow({ tools = [], content }) {
           </p>
         </div>
 
-        {/* Tools Horizontal Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
-          {renderedTools.map((tool, index) => {
-            const cardContent = (
-              <>
-                {/* Tool Monogram Badge */}
-                <div className="flex items-center justify-between mb-4">
-                  <span
-                    className={`w-9 h-9 flex items-center justify-center font-display font-black text-xs border rounded-none ${tool.badgeColor}`}
-                  >
-                    {tool.shortCode}
-                  </span>
-                  <span className="text-[9px] font-mono text-neutral-600 group-hover:text-neutral-400 transition-colors uppercase">
-                    STD
-                  </span>
-                </div>
-
-                {/* Tool Name & Role */}
-                <div>
-                  <h3 className="font-display font-bold text-xs sm:text-sm uppercase tracking-tight text-white mb-1 leading-snug">
+        {/* Client Reference-Matched Responsive Tools Container */}
+        <div className="w-full max-w-full overflow-hidden bg-[#0b0b0b] border border-white/[0.1] rounded-[12px] px-4 sm:px-6 lg:px-7 py-5 sm:py-6">
+          <ul className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap lg:items-center lg:justify-center xl:justify-evenly gap-x-4 gap-y-3 sm:gap-x-5 sm:gap-y-4 list-none p-0 m-0 w-full min-w-0">
+            {renderedTools.map((tool, index) => {
+              const itemInner = (
+                <div
+                  className={`group flex items-center gap-2.5 sm:gap-3 py-1.5 px-2.5 rounded-[8px] border border-transparent hover:border-white/[0.08] hover:bg-white/[0.025] min-w-0 max-w-full transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                    prefersReducedMotion ? "" : "hover:-translate-y-0.5"
+                  }`}
+                  title={
+                    tool.role ? `${tool.name} — ${tool.role}` : tool.name
+                  }
+                >
+                  <ToolBadgeIcon
+                    tool={tool}
+                    prefersReducedMotion={prefersReducedMotion}
+                  />
+                  <span className="font-sans text-xs sm:text-[13.5px] font-medium text-neutral-200 group-hover:text-white transition-colors duration-[220ms] leading-snug min-w-0 break-words">
                     {tool.name}
-                  </h3>
-                  <p className="text-[10px] font-mono text-neutral-400 leading-tight">
-                    {tool.role}
-                  </p>
+                  </span>
                 </div>
-              </>
-            );
+              );
 
-            return (
-              <motion.div
-                key={tool.name + index}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.3, delay: index * 0.04 }}
-                className="bg-[#0c0c0c] border border-white/10 hover:border-white/30 p-4 flex flex-col justify-between group transition-colors rounded-none"
-              >
-                {tool.websiteUrl ? (
-                  <a
-                    href={tool.websiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="no-underline text-inherit flex flex-col justify-between h-full"
-                  >
-                    {cardContent}
-                  </a>
-                ) : (
-                  cardContent
-                )}
-              </motion.div>
-            );
-          })}
+              return (
+                <motion.li
+                  key={tool.id || `${tool.name}-${index}`}
+                  className="min-w-0 max-w-full"
+                  initial={
+                    prefersReducedMotion
+                      ? { opacity: 1, y: 0 }
+                      : { opacity: 0, y: 10 }
+                  }
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0 }
+                      : { duration: 0.3, delay: index * 0.04, ease: "easeOut" }
+                  }
+                >
+                  {tool.websiteUrl ? (
+                    <a
+                      href={tool.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="no-underline text-inherit block min-w-0 max-w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/70 rounded-[8px]"
+                    >
+                      {itemInner}
+                    </a>
+                  ) : (
+                    itemInner
+                  )}
+                </motion.li>
+              );
+            })}
+          </ul>
         </div>
       </div>
     </section>

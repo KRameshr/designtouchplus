@@ -3,18 +3,13 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { createService, updateService } from "@/lib/api";
-
-const COLOR_THEMES = ["red", "green", "orange", "purple", "blue", "yellow"];
-const ICON_KEYS = [
-  "video",
-  "motion",
-  "social",
-  "youtube",
-  "graphic",
-  "thumbnail",
-  "branding",
-  "commercial",
-];
+import {
+  SERVICE_COLOR_OPTIONS,
+  SERVICE_ICON_OPTIONS,
+  ServiceOutlineIcon,
+  resolveServiceIconKey,
+  resolveServiceTheme,
+} from "@/lib/serviceIcons";
 
 const EMPTY_FORM = {
   icon: "video",
@@ -46,7 +41,10 @@ export default function ServiceForm({ service, onClose, onSaved }) {
       ? {
           ...EMPTY_FORM,
           ...service,
-          shortDescription: service.shortDescription || service.description || "",
+          icon: resolveServiceIconKey(service.icon, service.slug, service.title),
+          colorTheme: (service.colorTheme || "red").toLowerCase().trim(),
+          shortDescription:
+            service.shortDescription || service.description || "",
           fullDescription: service.fullDescription || "",
           ctaLabel: service.ctaLabel || "Learn More",
           ctaUrl: service.ctaUrl || "/contact",
@@ -59,6 +57,11 @@ export default function ServiceForm({ service, onClose, onSaved }) {
   const [slugTouched, setSlugTouched] = useState(Boolean(service));
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const selectedIconOption =
+    SERVICE_ICON_OPTIONS.find((opt) => opt.key === form.icon) ||
+    SERVICE_ICON_OPTIONS[0];
+  const resolvedTheme = resolveServiceTheme(form.colorTheme);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -205,7 +208,13 @@ export default function ServiceForm({ service, onClose, onSaved }) {
                   onChange={handleChange}
                   className="accent-brand-red w-4 h-4 cursor-pointer"
                 />
-                <span className={form.isActive ? "text-brand-green font-bold" : "text-neutral-500"}>
+                <span
+                  className={
+                    form.isActive
+                      ? "text-brand-green font-bold"
+                      : "text-neutral-500"
+                  }
+                >
                   {form.isActive ? "Active (Visible)" : "Inactive (Hidden)"}
                 </span>
               </label>
@@ -218,10 +227,15 @@ export default function ServiceForm({ service, onClose, onSaved }) {
               <label className="block text-[10px] font-mono uppercase tracking-wider text-neutral-400 mb-1">
                 Icon Identifier
               </label>
-              <select name="icon" value={form.icon} onChange={handleChange} className={inputClasses}>
-                {ICON_KEYS.map((k) => (
-                  <option key={k} value={k} className="bg-[#1a1a1a]">
-                    {k}
+              <select
+                name="icon"
+                value={form.icon}
+                onChange={handleChange}
+                className={inputClasses}
+              >
+                {SERVICE_ICON_OPTIONS.map((opt) => (
+                  <option key={opt.key} value={opt.key} className="bg-[#1a1a1a]">
+                    {opt.label}
                   </option>
                 ))}
               </select>
@@ -230,14 +244,42 @@ export default function ServiceForm({ service, onClose, onSaved }) {
               <label className="block text-[10px] font-mono uppercase tracking-wider text-neutral-400 mb-1">
                 Accent Theme Color
               </label>
-              <select name="colorTheme" value={form.colorTheme} onChange={handleChange} className={inputClasses}>
-                {COLOR_THEMES.map((c) => (
-                  <option key={c} value={c} className="bg-[#1a1a1a]">
-                    {c}
+              <select
+                name="colorTheme"
+                value={form.colorTheme}
+                onChange={handleChange}
+                className={inputClasses}
+              >
+                {SERVICE_COLOR_OPTIONS.map((c) => (
+                  <option key={c.key} value={c.key} className="bg-[#1a1a1a]">
+                    {c.label}
                   </option>
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Live Card Icon & Accent Preview */}
+          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-[8px]">
+            <div className="flex items-center gap-3.5">
+              <div style={{ color: resolvedTheme.hex }}>
+                <ServiceOutlineIcon
+                  iconKey={selectedIconOption.key}
+                  className="w-10 h-10"
+                />
+              </div>
+              <div>
+                <span className="block text-xs font-display font-bold uppercase text-white">
+                  {form.title || "Service Preview"}
+                </span>
+                <span className="block text-[10px] font-mono text-neutral-400 uppercase tracking-wider">
+                  Icon: {selectedIconOption.key} • Theme: {resolvedTheme.label}
+                </span>
+              </div>
+            </div>
+            <span className="font-display text-2xl font-extrabold text-white/10 select-none">
+              {form.orderNumber || "01"}
+            </span>
           </div>
 
           {/* Description */}
@@ -265,7 +307,9 @@ export default function ServiceForm({ service, onClose, onSaved }) {
               value={form.featuresText}
               onChange={handleChange}
               rows={4}
-              placeholder={"Long-form & Short-form Cuts\nDynamic Pacing & Retention Flow\nPodcast & Interview Editing\nCinematic Color Grading"}
+              placeholder={
+                "Long-form Editing\nShort-form / Reels\nPodcast Editing\nColor Grading"
+              }
               className={`${inputClasses} resize-none`}
             />
           </div>
@@ -313,7 +357,11 @@ export default function ServiceForm({ service, onClose, onSaved }) {
               disabled={saving}
               className="flex-1 text-xs font-mono font-bold uppercase tracking-widest text-white bg-brand-red hover:bg-red-600 disabled:opacity-60 rounded-none py-3 border border-brand-red cursor-pointer transition-colors"
             >
-              {saving ? "Saving..." : service?.id ? "Update Service" : "Create Service"}
+              {saving
+                ? "Saving..."
+                : service?.id
+                ? "Update Service"
+                : "Create Service"}
             </button>
           </div>
         </form>

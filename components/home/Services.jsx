@@ -1,130 +1,79 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
+import { useReducedMotion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 import {
-  Film,
-  Sparkles,
-  Smartphone,
-  Youtube,
-  PenTool,
-  Rocket,
-  ArrowRight,
-} from "lucide-react";
-import { motion } from "framer-motion";
+  ServiceCard,
+  normalizeServicesList,
+} from "@/components/services/ServicesGrid";
 
-// Maps the backend Service.icon string to an actual icon component.
-const ICON_MAP = {
-  video: Film,
-  motion: Sparkles,
-  social: Smartphone,
-  youtube: Youtube,
-  graphic: PenTool,
-  branding: Rocket,
-};
+export default function Services({ services = [] }) {
+  const prefersReducedMotion = useReducedMotion();
 
-// Maps Service.colorTheme (from the backend) to Tailwind classes — matches
-// the per-card icon color used in the Figma "OUR SERVICES" grid (red, green,
-// orange, purple, blue, yellow).
-const COLOR_MAP = {
-  red: {
-    icon: "text-brand-red",
-    bg: "bg-brand-red/10",
-    border: "hover:border-brand-red/40",
-    groupHoverText: "group-hover:text-brand-red",
-  },
-  green: {
-    icon: "text-brand-green",
-    bg: "bg-brand-green/10",
-    border: "hover:border-brand-green/40",
-    groupHoverText: "group-hover:text-brand-green",
-  },
-  orange: {
-    icon: "text-orange-400",
-    bg: "bg-orange-400/10",
-    border: "hover:border-orange-400/40",
-    groupHoverText: "group-hover:text-orange-400",
-  },
-  purple: {
-    icon: "text-purple-400",
-    bg: "bg-purple-400/10",
-    border: "hover:border-purple-400/40",
-    groupHoverText: "group-hover:text-purple-400",
-  },
-  blue: {
-    icon: "text-blue-400",
-    bg: "bg-blue-400/10",
-    border: "hover:border-blue-400/40",
-    groupHoverText: "group-hover:text-blue-400",
-  },
-  yellow: {
-    icon: "text-yellow-400",
-    bg: "bg-yellow-400/10",
-    border: "hover:border-yellow-400/40",
-    groupHoverText: "group-hover:text-yellow-400",
-  },
-};
-
-const Services = ({ services = [] }) => {
-  if (services.length === 0) return null;
+  const activeServices = useMemo(
+    () => normalizeServicesList(services),
+    [services]
+  );
 
   return (
-    <section className="bg-[#0a0a0a] text-white px-6 py-20">
+    <section
+      aria-labelledby="home-services-heading"
+      className="bg-[#080808] text-white px-4 sm:px-6 py-16 sm:py-24 border-b border-white/[0.08] overflow-x-clip"
+    >
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-red" />
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">
-              What We Do
-            </span>
+        {/* Section Header + View All Services Link */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 sm:mb-14 pb-6 border-b border-white/[0.08]">
+          <div>
+            <div className="flex items-center gap-2 mb-2.5">
+              <span
+                className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0"
+                aria-hidden="true"
+              />
+              <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.24em] text-neutral-400">
+                WHAT WE DO // PORTFOLIO DISCIPLINES
+              </span>
+            </div>
+            <h2
+              id="home-services-heading"
+              className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-[-0.03em] text-white"
+            >
+              OUR{" "}
+              <span className="bg-gradient-to-r from-brand-red to-brand-green bg-clip-text text-transparent">
+                SERVICES
+              </span>
+            </h2>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black uppercase">
-            Our{" "}
-            <span className="bg-gradient-to-r from-brand-red to-brand-green bg-clip-text text-transparent">
-              Services
-            </span>
-          </h2>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6">
+            <p className="text-neutral-400 text-xs sm:text-sm font-normal max-w-md leading-relaxed">
+              High-quality creative services tailored to your brand’s unique
+              needs. Engineered for digital retention and commercial
+              performance.
+            </p>
+            <Link
+              href="/services"
+              className="inline-flex items-center justify-center gap-2 shrink-0 px-5 py-3 bg-white/[0.04] hover:bg-brand-red border border-white/15 hover:border-brand-red text-white text-xs font-display font-bold uppercase tracking-[0.12em] rounded-[8px] transition-all duration-[220ms] no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/70"
+            >
+              <span>View All Services</span>
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
+          </div>
         </div>
 
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-60px" }}
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-        >
-          {services.map((service) => {
-            const Icon = ICON_MAP[service.icon] || Sparkles;
-            const colors = COLOR_MAP[service.colorTheme] || COLOR_MAP.red;
-
-            return (
-              <motion.div
-                key={service.id}
-                variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                transition={{ duration: 0.4 }}
-                className={`group bg-white/[0.03] border border-white/10 ${colors.border} rounded-xl p-6 transition-colors duration-300`}
-              >
-                <div className={`w-11 h-11 rounded-lg ${colors.bg} flex items-center justify-center mb-5 transition-colors duration-300`}>
-                  <Icon className={`w-5 h-5 ${colors.icon}`} />
-                </div>
-                <h3 className="text-base font-bold text-white mb-2">
-                  {service.title}
-                </h3>
-                <p className="text-gray-400 text-sm leading-relaxed mb-4">
-                  {service.description}
-                </p>
-                <Link
-                  href={`/services/${service.slug}`}
-                  className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-gray-300 ${colors.groupHoverText} no-underline transition-colors`}
-                >
-                  Learn More <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+        {/* 8-Service Responsive Grid (4 cols × 2 rows on desktop, 2 cols on tablet, 1 col on mobile) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+          {activeServices.map((service, index) => (
+            <ServiceCard
+              key={service.id || service.slug || service.title || index}
+              service={service}
+              index={index}
+              prefersReducedMotion={prefersReducedMotion}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
-};
-
-export default Services;
+}

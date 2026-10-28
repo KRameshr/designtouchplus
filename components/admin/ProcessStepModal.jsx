@@ -3,26 +3,27 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { createProcessStep, updateProcessStep } from "@/lib/api";
-
-const ICON_OPTIONS = [
-  { value: "discover", label: "Discover (Search / Target)" },
-  { value: "plan", label: "Plan (Grid / Blueprint)" },
-  { value: "create", label: "Create (Sparkle / Star)" },
-  { value: "review", label: "Review (Comment / Feedback)" },
-  { value: "deliver", label: "Deliver (Send / Arrow)" },
-];
+import {
+  PROCESS_ICON_OPTIONS,
+  resolveProcessIconKey,
+} from "@/lib/processIcons";
 
 export default function ProcessStepModal({ step, onClose, onSaved }) {
+  const isEditing = Boolean(step?.id);
+  const initialIcon = isEditing
+    ? resolveProcessIconKey(step.icon, step.title, step.stepNumber)
+    : "discover";
+
   const [form, setForm] = useState(
-    step
+    isEditing
       ? {
           stepNumber: step.stepNumber || 1,
           title: step.title || "",
           description: step.description || "",
-          icon: step.icon || "discover",
+          icon: initialIcon,
           displayOrder: step.displayOrder !== undefined ? step.displayOrder : 0,
           isActive: step.isActive !== undefined ? step.isActive : true,
-          pageType: "SERVICES",
+          pageType: step.pageType || "SERVICES",
         }
       : {
           stepNumber: 1,
@@ -46,6 +47,13 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
     }));
   };
 
+  const handleSelectIcon = (iconKey) => {
+    setForm((prev) => ({
+      ...prev,
+      icon: iconKey,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -53,11 +61,11 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
 
     try {
       const payload = {
-        pageType: "SERVICES",
+        pageType: form.pageType || "SERVICES",
         stepNumber: Number(form.stepNumber) || 1,
         title: form.title.trim(),
         description: form.description.trim(),
-        icon: form.icon,
+        icon: resolveProcessIconKey(form.icon, form.title, form.stepNumber),
         displayOrder: Number(form.displayOrder) || 0,
         isActive: Boolean(form.isActive),
       };
@@ -80,7 +88,7 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-[#111111] border border-white/15 rounded-none w-full max-w-lg p-6 relative shadow-2xl">
+      <div className="bg-[#111111] border border-white/15 rounded-none w-full max-w-xl max-h-[92vh] overflow-y-auto p-6 relative shadow-2xl">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/10">
           <div>
             <h2 className="text-sm font-display font-black uppercase tracking-wider text-white">
@@ -91,7 +99,9 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close modal"
             className="text-neutral-400 hover:text-white bg-transparent border-none cursor-pointer transition-colors"
           >
             <X className="w-5 h-5" />
@@ -144,22 +154,76 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
               value={form.title}
               onChange={handleChange}
               required
-              placeholder="e.g. Discover, Plan, Create..."
+              placeholder="e.g. DISCOVER, PLAN, CREATE..."
               className={inputClasses}
             />
           </div>
 
+          {/* Icon Selector Dropdown + Visual SVG Preview Grid */}
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-wider text-neutral-400 mb-1">
-              Icon
+            <label
+              htmlFor="process-step-icon-select"
+              className="block text-[10px] font-mono uppercase tracking-wider text-neutral-400 mb-1"
+            >
+              Icon *
             </label>
-            <select name="icon" value={form.icon} onChange={handleChange} className={inputClasses}>
-              {ICON_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-[#1a1a1a]">
+            <select
+              id="process-step-icon-select"
+              name="icon"
+              value={form.icon}
+              onChange={handleChange}
+              className={inputClasses}
+            >
+              {PROCESS_ICON_OPTIONS.map((opt) => (
+                <option key={opt.key} value={opt.key} className="bg-[#1a1a1a]">
                   {opt.label}
                 </option>
               ))}
             </select>
+
+            {/* Visual Preview Selector for All 5 Local SVG Icons */}
+            <div
+              role="radiogroup"
+              aria-label="Process step icon preview selector"
+              className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mt-2.5"
+            >
+              {PROCESS_ICON_OPTIONS.map((opt) => {
+                const isSelected = form.icon === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => handleSelectIcon(opt.key)}
+                    className={`flex flex-col items-center justify-center gap-2 p-3 border text-center cursor-pointer transition-all ${
+                      isSelected
+                        ? "bg-brand-red/[0.12] border-brand-red text-white shadow-[0_0_16px_-6px_rgba(239,68,68,0.45)]"
+                        : "bg-white/[0.02] border-white/10 hover:border-white/30 text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    <span
+                      className={`w-11 h-11 rounded-full flex items-center justify-center border transition-colors ${
+                        isSelected
+                          ? "bg-[#0b0b0b] border-brand-red/70"
+                          : "bg-[#0b0b0b] border-white/20"
+                      }`}
+                    >
+                      <img
+                        src={opt.src}
+                        alt={opt.label}
+                        width={22}
+                        height={22}
+                        className="w-5 h-5 object-contain select-none"
+                      />
+                    </span>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider leading-tight">
+                      {opt.shortLabel}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div>
@@ -185,8 +249,16 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
                 onChange={handleChange}
                 className="accent-brand-red w-4 h-4 cursor-pointer"
               />
-              <span className={form.isActive ? "text-brand-green font-bold" : "text-neutral-500"}>
-                {form.isActive ? "Active (Visible on public Services page)" : "Inactive (Hidden)"}
+              <span
+                className={
+                  form.isActive
+                    ? "text-brand-green font-bold"
+                    : "text-neutral-500"
+                }
+              >
+                {form.isActive
+                  ? "Active (Visible on public Services page)"
+                  : "Inactive (Hidden)"}
               </span>
             </label>
           </div>
@@ -213,4 +285,3 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
     </div>
   );
 }
-
