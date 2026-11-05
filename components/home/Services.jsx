@@ -39,10 +39,7 @@ export default function Services({ services = [] }) {
               id="home-services-heading"
               className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-[-0.03em] text-white"
             >
-              OUR{" "}
-              <span className="bg-gradient-to-r from-brand-red to-brand-green bg-clip-text text-transparent">
-                SERVICES
-              </span>
+              OUR <span className="text-brand-red">SERVICES</span>
             </h2>
           </div>
 
@@ -54,7 +51,7 @@ export default function Services({ services = [] }) {
             </p>
             <Link
               href="/services"
-              className="inline-flex items-center justify-center gap-2 shrink-0 px-5 py-3 bg-white/[0.04] hover:bg-brand-red border border-white/15 hover:border-brand-red text-white text-xs font-display font-bold uppercase tracking-[0.12em] rounded-[8px] transition-all duration-[220ms] no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/70"
+              className="inline-flex items-center justify-center gap-2 shrink-0 px-5 py-3 bg-brand-red hover:bg-[#dc2626] border-0 text-white text-xs font-display font-bold uppercase tracking-[0.12em] rounded-none transition-colors duration-150 no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/70"
             >
               <span>View All Services</span>
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -63,7 +60,7 @@ export default function Services({ services = [] }) {
         </div>
 
         {/* 8-Service Responsive Grid (4 cols × 2 rows on desktop, 2 cols on tablet, 1 col on mobile) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 items-stretch">
           {activeServices.map((service, index) => (
             <ServiceCard
               key={service.id || service.slug || service.title || index}

@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
   const post = await getBlogPostBySlug(params.slug).catch(() => null);
   if (!post) {
     return {
-      title: "Blog Post | DesignTouch+",
+      title: "Blog Post",
       description: "Creative insights and tutorials by DesignTouch+",
     };
   }
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }) {
     : (post.excerpt || `Read ${post.title} on the DesignTouch+ blog.`);
 
   return {
-    title: `${effectiveTitle} | DesignTouch+`,
+    title: effectiveTitle,
     description: effectiveDescription,
     keywords: Array.isArray(post.tags) && post.tags.length > 0 ? post.tags : undefined,
     alternates: {

@@ -14,9 +14,14 @@ module.exports = {
           green: "#22C55E",
         },
       },
+      maxWidth: {
+        "7xl": "1440px",
+      },
       fontFamily: {
         sans: ["var(--font-inter)", "sans-serif"],
         display: ["var(--font-syne)", "sans-serif"],
+        poppins: ["var(--font-poppins)", "Poppins", "sans-serif"],
+        inter: ["var(--font-inter)", "sans-serif"],
       },
     },
   },

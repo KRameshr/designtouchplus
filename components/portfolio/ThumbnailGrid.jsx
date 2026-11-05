@@ -114,8 +114,8 @@ export default function ThumbnailGrid({ items = [], categories = [] }) {
   }
 
   return (
-    <section id="thumbnails" className="bg-[#080808] text-white px-4 sm:px-6 py-12 sm:py-16 border-b border-white/[0.08] scroll-mt-20">
-      <div id="thumbnail-design" className="max-w-7xl mx-auto">
+    <section id="thumbnails" className="bg-[#080808] text-white py-12 sm:py-16 border-b border-white/[0.08] scroll-mt-20">
+      <div id="thumbnail-design" className="global-container w-[calc(100%-32px)] sm:w-[calc(100%-64px)] lg:w-[calc(100%-120px)] max-w-7xl max-w-[1440px] mx-auto">
         {/* Section Header: THUMBNAIL DESIGN */}
         <div className="flex items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-2.5 shrink-0">
@@ -124,7 +124,7 @@ export default function ThumbnailGrid({ items = [], categories = [] }) {
               Thumbnail Design
             </h2>
             <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1 hidden sm:inline-block">
-              // HIGH-CTR YOUTUBE PACKAGING
+              {"// HIGH-CTR YOUTUBE PACKAGING"}
             </span>
           </div>
 
@@ -178,22 +178,23 @@ export default function ThumbnailGrid({ items = [], categories = [] }) {
               return (
                 <article
                   key={item.id || idx}
-                  className="flex flex-col bg-[#0c0c0c] border border-white/10 hover:border-white/25 transition-all duration-200 rounded-none group"
+                  data-testid="thumbnail-card"
+                  className="flex flex-col bg-[#0c0c0c] border border-white/10 hover:border-white/25 transition-all duration-200 rounded-[1px] overflow-hidden group"
                 >
                   {/* 16:9 Thumbnail Frame */}
                   <Link
                     href={`/portfolio/${item.slug || item.id}`}
-                    className="relative aspect-[16/9] w-full overflow-hidden bg-[#141414] border-b border-white/[0.08] select-none block"
+                    className="relative aspect-[16/9] w-full overflow-hidden bg-[#141414] border-b border-white/[0.08] select-none block rounded-t-[1px]"
                   >
                     {imageSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={imageSrc}
                         alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-t-[1px]"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center p-3 text-center bg-[#111]">
+                      <div className="w-full h-full flex items-center justify-center p-3 text-center bg-[#111] rounded-t-[1px]">
                         <span className="text-[10px] font-mono uppercase text-neutral-600">
                           [THUMBNAIL // 16:9]
                         </span>

@@ -210,7 +210,7 @@ export default function AddOnModal({ addOn, onClose, onSaved }) {
             {form.customIconUrl ? (
               <div className="p-3 bg-white/[0.03] border border-white/10 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-white/[0.06] border border-white/15 flex items-center justify-center shrink-0 p-1.5 overflow-hidden">
+                  <div className="w-10 h-10 rounded-none bg-white/[0.06] border border-white/15 flex items-center justify-center shrink-0 p-1.5 overflow-hidden">
                     <img
                       src={form.customIconUrl}
                       alt="Custom icon preview"

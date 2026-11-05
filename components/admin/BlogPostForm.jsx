@@ -1022,11 +1022,11 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
   };
 
   const inputClasses =
-    "bg-white/[0.04] border border-white/10 focus:border-brand-red rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-neutral-500 outline-none transition-colors w-full";
+    "bg-white/[0.04] border border-white/10 focus:border-brand-red rounded-none px-3.5 py-2.5 text-sm text-white placeholder-neutral-500 outline-none transition-colors w-full";
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-      <div className="bg-[#111111] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl my-auto">
+      <div className="bg-[#111111] border border-white/10 rounded-none w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl my-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
           <div>
@@ -1040,7 +1040,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
           </div>
           <button
             onClick={onClose}
-            className="text-neutral-400 hover:text-white bg-transparent border-none cursor-pointer p-1 rounded-lg transition-colors"
+            className="text-neutral-400 hover:text-white bg-transparent border-none cursor-pointer p-1 rounded-none transition-colors"
             aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
@@ -1056,14 +1056,14 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
         ) : (
           <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-6">
             {error && (
-              <div className="flex items-start gap-2.5 p-3.5 bg-rose-500/10 border border-rose-500/25 rounded-lg text-rose-400 text-xs">
+              <div className="flex items-start gap-2.5 p-3.5 bg-rose-500/10 border border-rose-500/25 rounded-none text-rose-400 text-xs">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             {imageMessage && (
-              <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/25 rounded-lg text-emerald-400 text-xs">
+              <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/25 rounded-none text-emerald-400 text-xs">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>{imageMessage}</span>
               </div>
@@ -1149,7 +1149,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
             </div>
 
             {/* Status & Publication / Scheduling Settings */}
-            <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] space-y-4">
+            <div className="p-4 rounded-none border border-white/10 bg-white/[0.02] space-y-4">
               <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-neutral-300">
                 <Clock className="w-4 h-4 text-brand-red" />
                 <span>Publication Status & Scheduling</span>
@@ -1215,7 +1215,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
             </div>
 
             {/* Cloudinary Cover Image Section */}
-            <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] space-y-4">
+            <div className="p-4 rounded-none border border-white/10 bg-white/[0.02] space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-brand-red" />
@@ -1227,7 +1227,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
               </div>
 
               {form.coverImageUrl ? (
-                <div className="relative rounded-xl overflow-hidden border border-white/10 bg-[#0d0d0d] aspect-[16/8] max-h-56 group">
+                <div className="relative rounded-none overflow-hidden border border-white/10 bg-[#0d0d0d] aspect-[16/8] max-h-56 group">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={form.coverImageUrl}
@@ -1239,7 +1239,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                       type="button"
                       onClick={() => coverFileInputRef.current?.click()}
                       disabled={uploadingCoverImage}
-                      className="px-3.5 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-mono font-semibold flex items-center gap-1.5 border-none cursor-pointer backdrop-blur-md"
+                      className="px-3.5 py-2 rounded-none bg-white/20 hover:bg-white/30 text-white text-xs font-mono font-semibold flex items-center gap-1.5 border border-white/20 cursor-pointer backdrop-blur-md"
                     >
                       <RefreshCw className="w-3.5 h-3.5" /> Replace Cover
                     </button>
@@ -1247,7 +1247,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                       type="button"
                       onClick={handleRemoveCoverImage}
                       disabled={uploadingCoverImage}
-                      className="px-3.5 py-2 rounded-lg bg-rose-500/80 hover:bg-rose-600 text-white text-xs font-mono font-semibold flex items-center gap-1.5 border-none cursor-pointer backdrop-blur-md"
+                      className="px-3.5 py-2 rounded-none bg-rose-500/80 hover:bg-rose-600 text-white text-xs font-mono font-semibold flex items-center gap-1.5 border border-rose-500 cursor-pointer backdrop-blur-md"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Remove
                     </button>
@@ -1256,7 +1256,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
               ) : (
                 <div
                   onClick={() => coverFileInputRef.current?.click()}
-                  className="border-2 border-dashed border-white/15 hover:border-brand-red/50 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white/[0.01] hover:bg-white/[0.03]"
+                  className="border-2 border-dashed border-white/15 hover:border-brand-red/50 rounded-none p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white/[0.01] hover:bg-white/[0.03]"
                 >
                   {uploadingCoverImage ? (
                     <div className="flex flex-col items-center gap-2">
@@ -1265,7 +1265,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                     </div>
                   ) : (
                     <>
-                      <div className="w-10 h-10 rounded-full bg-white/[0.05] flex items-center justify-center text-neutral-400 mb-2">
+                      <div className="w-10 h-10 rounded-none bg-white/[0.05] border border-white/10 flex items-center justify-center text-neutral-400 mb-2">
                         <Upload className="w-5 h-5" />
                       </div>
                       <p className="text-xs font-mono text-neutral-300 font-bold uppercase tracking-wider mb-1">
@@ -1319,7 +1319,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
             </div>
 
             {/* SEO SETTINGS Section */}
-            <div className="p-5 rounded-xl border border-white/10 bg-white/[0.02] space-y-5">
+            <div className="p-5 rounded-none border border-white/10 bg-white/[0.02] space-y-5">
               <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4 text-brand-red" />
@@ -1426,7 +1426,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                     type="button"
                     onClick={handleAddFocusKeyword}
                     disabled={!focusKeywordInput.trim()}
-                    className="h-10 sm:h-[42px] px-3.5 sm:px-4 text-xs font-mono font-bold uppercase tracking-wider text-white bg-white/[0.08] hover:bg-brand-red disabled:opacity-40 border border-white/10 rounded-lg cursor-pointer transition-colors shrink-0 whitespace-nowrap flex items-center justify-center"
+                    className="h-10 sm:h-[42px] px-3.5 sm:px-4 text-xs font-mono font-bold uppercase tracking-wider text-white bg-white/[0.08] hover:bg-brand-red disabled:opacity-40 border border-white/10 rounded-none cursor-pointer transition-colors shrink-0 whitespace-nowrap flex items-center justify-center"
                   >
                     Add Keyword
                   </button>
@@ -1434,18 +1434,18 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
 
                 {/* Render Focus Keyword Chips */}
                 {form.focusKeywords && form.focusKeywords.length > 0 ? (
-                  <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-black/40 border border-white/[0.06] mb-1.5">
+                  <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-none bg-black/40 border border-white/[0.06] mb-1.5">
                     {form.focusKeywords.map((kw, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-neutral-200 bg-amber-500/10 border border-amber-500/25 hover:border-amber-400 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-mono text-neutral-200 bg-amber-500/10 border border-amber-500/25 hover:border-amber-400 transition-colors"
                       >
                         <span className="text-amber-400 text-[10px] font-bold">KEYWORD</span>
                         <span>{kw}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveFocusKeyword(kw)}
-                          className="text-neutral-400 hover:text-rose-400 p-0.5 rounded-full bg-transparent border-none cursor-pointer transition-colors"
+                          className="text-neutral-400 hover:text-rose-400 p-0.5 rounded-none bg-transparent border-none cursor-pointer transition-colors"
                           aria-label={`Remove focus keyword ${kw}`}
                         >
                           <X className="w-3 h-3" />
@@ -1489,7 +1489,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                     type="button"
                     onClick={handleAddTag}
                     disabled={!tagInput.trim()}
-                    className="h-10 sm:h-[42px] px-3.5 sm:px-4 text-xs font-mono font-bold uppercase tracking-wider text-white bg-white/[0.08] hover:bg-brand-red disabled:opacity-40 border border-white/10 rounded-lg cursor-pointer transition-colors shrink-0 whitespace-nowrap flex items-center justify-center"
+                    className="h-10 sm:h-[42px] px-3.5 sm:px-4 text-xs font-mono font-bold uppercase tracking-wider text-white bg-white/[0.08] hover:bg-brand-red disabled:opacity-40 border border-white/10 rounded-none cursor-pointer transition-colors shrink-0 whitespace-nowrap flex items-center justify-center"
                   >
                     Add Tag
                   </button>
@@ -1497,17 +1497,17 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
 
                 {/* Render Tags */}
                 {form.tags && form.tags.length > 0 ? (
-                  <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-black/40 border border-white/[0.06] mb-1.5">
+                  <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-none bg-black/40 border border-white/[0.06] mb-1.5">
                     {form.tags.map((tag, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-neutral-200 bg-white/[0.06] border border-white/10 hover:border-brand-red/50 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-mono text-neutral-200 bg-white/[0.06] border border-white/10 hover:border-brand-red/50 transition-colors"
                       >
                         <span>#{tag}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveTag(tag)}
-                          className="text-neutral-400 hover:text-rose-400 p-0.5 rounded-full bg-transparent border-none cursor-pointer transition-colors"
+                          className="text-neutral-400 hover:text-rose-400 p-0.5 rounded-none bg-transparent border-none cursor-pointer transition-colors"
                           aria-label={`Remove tag ${tag}`}
                         >
                           <X className="w-3 h-3" />
@@ -1534,7 +1534,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                   </span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#080808] border border-white/10 space-y-1.5">
+                <div className="p-4 rounded-none bg-[#080808] border border-white/10 space-y-1.5">
                   {/* SERP URL */}
                   <div className="flex items-center gap-1.5 text-xs font-sans text-neutral-400 truncate">
                     <span className="text-neutral-500">https://designtouchplus.com</span>
@@ -1568,7 +1568,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                   <button
                     type="button"
                     onClick={() => setActiveTab("WRITE")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-none text-xs font-mono font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
                       activeTab === "WRITE"
                         ? "bg-brand-red text-white border-brand-red"
                         : "bg-white/[0.04] text-neutral-400 hover:text-white border-white/10"
@@ -1579,7 +1579,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                   <button
                     type="button"
                     onClick={() => setActiveTab("PREVIEW")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-none text-xs font-mono font-bold uppercase tracking-wider border transition-colors cursor-pointer flex items-center gap-1.5 ${
                       activeTab === "PREVIEW"
                         ? "bg-brand-red text-white border-brand-red"
                         : "bg-white/[0.04] text-neutral-400 hover:text-white border-white/10"
@@ -1598,12 +1598,12 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
               {activeTab === "WRITE" ? (
                 <div className="space-y-2">
                   {/* Rich Text Toolbar */}
-                  <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg bg-white/[0.03] border border-white/10">
+                  <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-none bg-white/[0.03] border border-white/10">
                     <button
                       type="button"
                       title="Heading 2 (## Title)"
                       onClick={() => insertSnippet("## ", "\n", "Heading 2")}
-                      className="p-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
+                      className="p-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
                     >
                       <Heading2 className="w-4 h-4" />
                     </button>
@@ -1611,7 +1611,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                       type="button"
                       title="Heading 3 (### Subtitle)"
                       onClick={() => insertSnippet("### ", "\n", "Heading 3")}
-                      className="p-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
+                      className="p-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
                     >
                       <Heading3 className="w-4 h-4" />
                     </button>
@@ -1620,7 +1620,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                       type="button"
                       title="Bold (**text**)"
                       onClick={() => insertSnippet("**", "**", "bold text")}
-                      className="p-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
+                      className="p-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
                     >
                       <Bold className="w-4 h-4" />
                     </button>
@@ -1628,7 +1628,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                       type="button"
                       title="Italic (*text*)"
                       onClick={() => insertSnippet("*", "*", "italic text")}
-                      className="p-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
+                      className="p-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
                     >
                       <Italic className="w-4 h-4" />
                     </button>
@@ -1637,7 +1637,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                       type="button"
                       title="Insert / Edit Hyperlink"
                       onClick={handleOpenLinkModal}
-                      className="p-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
+                      className="p-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
                     >
                       <LinkIcon className="w-4 h-4" />
                     </button>
@@ -1645,7 +1645,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                       type="button"
                       title="Bulleted List"
                       onClick={() => insertSnippet("- ", "\n- Second item\n- Third item\n", "First item")}
-                      className="p-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
+                      className="p-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
                     >
                       <List className="w-4 h-4" />
                     </button>
@@ -1653,7 +1653,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                       type="button"
                       title="Numbered List"
                       onClick={() => insertSnippet("1. ", "\n2. Second step\n3. Third step\n", "First step")}
-                      className="p-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
+                      className="p-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors"
                     >
                       <ListOrdered className="w-4 h-4" />
                     </button>
@@ -1665,7 +1665,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                           "\n| Feature | Starter | Professional |\n| --- | --- | --- |\n| 4K Resolution | Yes | Yes |\n| Unlimited Revisions | No | Yes |\n| Turnaround Time | 48 hrs | 24 hrs |\n\n"
                         )
                       }
-                      className="p-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors flex items-center gap-1 text-xs font-mono"
+                      className="p-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors flex items-center gap-1 text-xs font-mono"
                     >
                       <TableIcon className="w-4 h-4" />
                       <span>Table</span>
@@ -1682,7 +1682,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                         contentImageFileInputRef.current?.click();
                       }}
                       disabled={uploadingContentImages}
-                      className="px-2.5 py-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border border-white/10 bg-white/[0.04] cursor-pointer transition-colors flex items-center gap-1.5 text-xs font-mono font-medium disabled:opacity-60"
+                      className="px-2.5 py-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border border-white/10 bg-white/[0.04] cursor-pointer transition-colors flex items-center gap-1.5 text-xs font-mono font-medium disabled:opacity-60"
                     >
                       {uploadingContentImages ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-red" />
@@ -1697,7 +1697,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                       type="button"
                       title="Insert image by URL with Alt Text"
                       onClick={handleOpenImageUrlModal}
-                      className="px-2.5 py-1.5 rounded text-neutral-300 hover:text-white hover:bg-white/10 border border-white/10 bg-white/[0.04] cursor-pointer transition-colors flex items-center gap-1.5 text-xs font-mono font-medium"
+                      className="px-2.5 py-1.5 rounded-none text-neutral-300 hover:text-white hover:bg-white/10 border border-white/10 bg-white/[0.04] cursor-pointer transition-colors flex items-center gap-1.5 text-xs font-mono font-medium"
                     >
                       <ImageIcon className="w-3.5 h-3.5 text-brand-red" />
                       <span>Image URL</span>
@@ -1716,7 +1716,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
 
                   {/* Upload Progress Banner */}
                   {uploadingContentImages && (
-                    <div className="flex items-center gap-2.5 p-3 bg-brand-red/10 border border-brand-red/30 rounded-lg text-xs font-mono text-brand-red animate-pulse">
+                    <div className="flex items-center gap-2.5 p-3 bg-brand-red/10 border border-brand-red/30 rounded-none text-xs font-mono text-brand-red animate-pulse">
                       <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                       <span>{contentImageProgress || "Uploading images to Cloudinary..."}</span>
                     </div>
@@ -1744,10 +1744,10 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                 </div>
               ) : (
                 /* Live Public Preview */
-                <div className="rounded-xl border border-white/10 bg-[#0a0a0a] p-6 sm:p-8 min-h-[360px] max-h-[550px] overflow-y-auto">
+                <div className="rounded-none border border-white/10 bg-[#0a0a0a] p-6 sm:p-8 min-h-[360px] max-h-[550px] overflow-y-auto">
                   <div className="max-w-3xl mx-auto space-y-6">
                     {form.coverImageUrl && (
-                      <div className="relative aspect-[16/9] rounded-xl overflow-hidden border border-white/10 bg-white/[0.03] shadow-lg">
+                      <div className="relative aspect-[16/9] rounded-none overflow-hidden border border-white/10 bg-white/[0.03] shadow-lg">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={form.coverImageUrl}
@@ -1776,14 +1776,14 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                 type="button"
                 onClick={onClose}
                 disabled={saving}
-                className="px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg cursor-pointer transition-colors"
+                className="px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-none cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving || uploadingCoverImage || uploadingContentImages}
-                className="px-6 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-white bg-brand-red hover:bg-[#dc2626] disabled:opacity-60 border-none rounded-lg cursor-pointer transition-colors shadow-[0_4px_15px_rgba(239,68,68,0.3)] flex items-center gap-2"
+                className="px-6 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-white bg-brand-red hover:bg-[#dc2626] disabled:opacity-60 border border-brand-red rounded-none cursor-pointer transition-colors flex items-center gap-2"
               >
                 {saving ? (
                   <>
@@ -1800,7 +1800,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
         {/* Modal: Insert / Edit Hyperlink */}
         {showLinkModal && (
           <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-[#111111] border border-white/15 w-full max-w-md p-6 rounded-xl shadow-2xl relative">
+            <div className="bg-[#111111] border border-white/15 w-full max-w-md p-6 rounded-none shadow-2xl relative">
               <button
                 type="button"
                 onClick={() => setShowLinkModal(false)}
@@ -1811,7 +1811,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
               </button>
 
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-brand-red/10 border border-brand-red/30 flex items-center justify-center text-brand-red">
+                <div className="w-8 h-8 rounded-none bg-brand-red/10 border border-brand-red/30 flex items-center justify-center text-brand-red">
                   <LinkIcon className="w-4 h-4" />
                 </div>
                 <div>
@@ -1825,7 +1825,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
               </div>
 
               {linkError && (
-                <div className="mb-4 p-2.5 bg-rose-500/10 border border-rose-500/25 rounded-lg text-rose-400 text-xs flex items-center gap-2">
+                <div className="mb-4 p-2.5 bg-rose-500/10 border border-rose-500/25 rounded-none text-rose-400 text-xs flex items-center gap-2">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{linkError}</span>
                 </div>
@@ -1868,13 +1868,13 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                   <button
                     type="button"
                     onClick={() => setShowLinkModal(false)}
-                    className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-white bg-white/[0.04] border border-white/10 rounded-lg cursor-pointer transition-colors"
+                    className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-white bg-white/[0.04] border border-white/10 rounded-none cursor-pointer transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white bg-brand-red hover:bg-[#dc2626] border-none rounded-lg cursor-pointer transition-colors"
+                    className="px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white bg-brand-red hover:bg-[#dc2626] border border-brand-red rounded-none cursor-pointer transition-colors"
                   >
                     Insert Link
                   </button>
@@ -1887,7 +1887,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
         {/* Modal: Insert Image via URL */}
         {showImageUrlModal && (
           <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-[#111111] border border-white/15 w-full max-w-md p-6 rounded-xl shadow-2xl relative">
+            <div className="bg-[#111111] border border-white/15 w-full max-w-md p-6 rounded-none shadow-2xl relative">
               <button
                 type="button"
                 onClick={() => setShowImageUrlModal(false)}
@@ -1898,7 +1898,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
               </button>
 
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-brand-red/10 border border-brand-red/30 flex items-center justify-center text-brand-red">
+                <div className="w-8 h-8 rounded-none bg-brand-red/10 border border-brand-red/30 flex items-center justify-center text-brand-red">
                   <ImageIcon className="w-4 h-4" />
                 </div>
                 <div>
@@ -1912,7 +1912,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
               </div>
 
               {imageUrlError && (
-                <div className="mb-4 p-2.5 bg-rose-500/10 border border-rose-500/25 rounded-lg text-rose-400 text-xs flex items-center gap-2">
+                <div className="mb-4 p-2.5 bg-rose-500/10 border border-rose-500/25 rounded-none text-rose-400 text-xs flex items-center gap-2">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{imageUrlError}</span>
                 </div>
@@ -1948,7 +1948,7 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                 </div>
 
                 {imageUrlInput.trim().startsWith("http") && (
-                  <div className="rounded-lg overflow-hidden border border-white/10 bg-black/40 aspect-[16/9] max-h-36 flex items-center justify-center">
+                  <div className="rounded-none overflow-hidden border border-white/10 bg-black/40 aspect-[16/9] max-h-36 flex items-center justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={imageUrlInput.trim()}
@@ -1965,13 +1965,13 @@ export default function BlogPostForm({ post, onClose, onSaved }) {
                   <button
                     type="button"
                     onClick={() => setShowImageUrlModal(false)}
-                    className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-white bg-white/[0.04] border border-white/10 rounded-lg cursor-pointer transition-colors"
+                    className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-white bg-white/[0.04] border border-white/10 rounded-none cursor-pointer transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white bg-brand-red hover:bg-[#dc2626] border-none rounded-lg cursor-pointer transition-colors"
+                    className="px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white bg-brand-red hover:bg-[#dc2626] border border-brand-red rounded-none cursor-pointer transition-colors"
                   >
                     Insert Image
                   </button>

@@ -1,171 +1,176 @@
 "use client";
 
-import { useState } from "react";
-import { Phone, Mail, MapPin, Send, Instagram, Youtube, Linkedin } from "lucide-react";
-import { motion } from "framer-motion";
-import { submitContactMessage } from "@/lib/api";
+import Link from "next/link";
+import { Phone, Mail, MapPin } from "lucide-react";
 
-const ContactSection = ({ companyInfo }) => {
-  const [form, setForm] = useState({ name: "", email: "", company: "", phone: "", message: "" });
-  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+const ContactSection = ({ companyInfo, contactContent }) => {
+  // Enabled flags from CMS
+  const isPhoneEnabled = contactContent?.directContactPhoneEnabled !== false;
+  const isEmailEnabled = contactContent?.directContactEmailEnabled !== false;
+  const isLocationEnabled = contactContent?.directContactLocationEnabled !== false;
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  // Contact details: dynamic from contactContent, fallback to companyInfo, then fallback defaults
+  const phone =
+    contactContent?.directContactPhone ||
+    companyInfo?.whatsappNumber ||
+    companyInfo?.phone ||
+    "+91 12345 67890";
+  const phoneLabel =
+    contactContent?.directContactPhoneLabel || "Phone / WhatsApp";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStatus("loading");
-    try {
-      // Backend ContactMessage only has name/email/company/subject/message —
-      // phone isn't a stored field, so fold it into the message body.
-      await submitContactMessage({
-        name: form.name,
-        email: form.email,
-        company: form.company,
-        subject: "New inquiry from homepage",
-        message: form.phone ? `${form.message}\n\nPhone: ${form.phone}` : form.message,
-      });
-      setStatus("success");
-      setForm({ name: "", email: "", company: "", phone: "", message: "" });
-    } catch {
-      setStatus("error");
-    }
-  };
+  const email =
+    contactContent?.directContactEmail ||
+    companyInfo?.email ||
+    "hello@designtouchplus.com";
+  const emailLabel =
+    contactContent?.directContactEmailLabel || "Email Address";
+
+  const location =
+    contactContent?.directContactLocation ||
+    companyInfo?.address ||
+    "India · Remote Worldwide";
+  const locationLabel =
+    contactContent?.directContactLocationLabel || "Location";
+
+  const cleanPhoneTel = phone ? phone.replace(/[^\d+]/g, "") : "";
 
   return (
-    <section className="bg-[#0a0a0a] text-white px-6 py-20 border-t border-white/[0.06]">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Left — heading + contact info */}
-        <div className="lg:col-span-1">
-          <h2 className="text-2xl sm:text-3xl font-black uppercase leading-tight mb-4">
-            Let&apos;s Create Something{" "}
-            <span className="bg-gradient-to-r from-brand-red to-brand-green bg-clip-text text-transparent">
-              Amazing
-            </span>
-          </h2>
-          <p className="text-gray-400 text-sm leading-relaxed mb-8">
-            Have a project in mind? Let&apos;s talk and bring your ideas to life.
-          </p>
+    <section
+      id="contact"
+      aria-label="Contact and Project Inquiry"
+      className="bg-[#080808] text-white py-16 sm:py-20 lg:py-24 border-t border-white/[0.08] relative overflow-hidden"
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-12 lg:gap-16 items-stretch">
+          {/* Left Column: Heading, description, contact details & social links */}
+          <div className="flex flex-col justify-between">
+            <div>
+              {/* Eyebrow */}
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <span
+                  className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0"
+                  aria-hidden="true"
+                />
+                <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.24em] text-neutral-400">
+                  LET&apos;S CONNECT // START A PROJECT
+                </span>
+              </div>
 
-          <div className="flex flex-col gap-4 mb-8">
-            {companyInfo?.phone && (
-              <div className="flex items-center gap-3 text-sm text-gray-300">
-                <Phone className="w-4 h-4 text-brand-red shrink-0" />
-                {companyInfo.phone}
-              </div>
-            )}
-            {companyInfo?.email && (
-              <div className="flex items-center gap-3 text-sm text-gray-300">
-                <Mail className="w-4 h-4 text-brand-red shrink-0" />
-                {companyInfo.email}
-              </div>
-            )}
-            {companyInfo?.address && (
-              <div className="flex items-center gap-3 text-sm text-gray-300">
-                <MapPin className="w-4 h-4 text-brand-red shrink-0" />
-                {companyInfo.address}
-              </div>
-            )}
-          </div>
+              {/* Main Heading */}
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black uppercase leading-[1.05] tracking-tight text-white mb-4 sm:mb-5">
+                LET&apos;S CREATE SOMETHING{" "}
+                <span className="text-brand-red">AMAZING</span>
+              </h2>
 
-          <div className="flex gap-3">
-            {[Instagram, Youtube, Linkedin].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:border-white/30 transition-colors"
-              >
-                <Icon className="w-4 h-4" />
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* Right — form */}
-        <div className="lg:col-span-2 bg-white/[0.03] border border-white/10 rounded-2xl p-6 sm:p-8">
-          {status === "success" ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center text-center py-12"
-            >
-              <div className="w-14 h-14 rounded-full bg-brand-green/10 flex items-center justify-center mb-4">
-                <Send className="w-6 h-6 text-brand-green" />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-2">Message Sent!</h3>
-              <p className="text-gray-400 text-sm mb-6">
-                Thanks for reaching out — we&apos;ll get back to you within 24 hours.
+              {/* Description */}
+              <p className="text-neutral-400 text-sm sm:text-base leading-relaxed mb-8 max-w-lg">
+                Have a project in mind? Let&apos;s talk and bring your ideas to life.
               </p>
-              <button
-                onClick={() => setStatus("idle")}
-                className="text-xs font-bold uppercase tracking-widest text-brand-red cursor-pointer bg-transparent border-none"
-              >
-                Send Another Message
-              </button>
-            </motion.div>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Your Name"
-                  className="bg-white/[0.04] border border-white/10 focus:border-brand-red rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors"
+
+              {/* Contact Info Items */}
+              <div className="flex flex-col gap-4 mb-8 sm:mb-10">
+                {/* Phone (if enabled) */}
+                {isPhoneEnabled && (
+                  <a
+                    href={cleanPhoneTel ? `tel:${cleanPhoneTel}` : `tel:${phone}`}
+                    className="flex items-center gap-3.5 text-sm sm:text-base text-neutral-300 hover:text-white transition-colors duration-200 group no-underline"
+                    aria-label={`Call or WhatsApp: ${phone}`}
+                  >
+                    <div className="w-10 h-10 flex items-center justify-center bg-white/[0.04] border border-white/[0.08] group-hover:border-brand-red/60 transition-colors duration-200 rounded-none shrink-0">
+                      <Phone className="w-4 h-4 text-brand-red shrink-0" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500">
+                        {phoneLabel}
+                      </span>
+                      <span className="font-mono text-sm sm:text-base font-medium text-neutral-200 group-hover:text-white transition-colors duration-200">
+                        {phone}
+                      </span>
+                    </div>
+                  </a>
+                )}
+
+                {/* Email (if enabled) */}
+                {isEmailEnabled && (
+                  <a
+                    href={`mailto:${email}`}
+                    className="flex items-center gap-3.5 text-sm sm:text-base text-neutral-300 hover:text-white transition-colors duration-200 group no-underline"
+                    aria-label={`Email: ${email}`}
+                  >
+                    <div className="w-10 h-10 flex items-center justify-center bg-white/[0.04] border border-white/[0.08] group-hover:border-brand-red/60 transition-colors duration-200 rounded-none shrink-0">
+                      <Mail className="w-4 h-4 text-brand-red shrink-0" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500">
+                        {emailLabel}
+                      </span>
+                      <span className="font-mono text-sm sm:text-base font-medium text-neutral-200 group-hover:text-white transition-colors duration-200">
+                        {email}
+                      </span>
+                    </div>
+                  </a>
+                )}
+
+                {/* Location (if enabled) */}
+                {isLocationEnabled && (
+                  <div className="flex items-center gap-3.5 text-sm sm:text-base text-neutral-300">
+                    <div className="w-10 h-10 flex items-center justify-center bg-white/[0.04] border border-white/[0.08] rounded-none shrink-0">
+                      <MapPin className="w-4 h-4 text-brand-red shrink-0" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500">
+                        {locationLabel}
+                      </span>
+                      <span className="text-sm sm:text-base font-medium text-neutral-200">
+                        {location}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Project CTA panel / card */}
+          <div className="bg-[#0e0e0e] border border-white/[0.08] p-8 sm:p-10 lg:p-12 rounded-none relative flex flex-col justify-between">
+            {/* Subtle red indicator at top */}
+            <div
+              className="absolute top-0 left-0 w-12 h-[2px] bg-brand-red"
+              aria-hidden="true"
+            />
+
+            <div>
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-white/[0.04] border border-white/[0.08] text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 mb-6 rounded-none">
+                <span
+                  className="w-1.5 h-1.5 bg-brand-red inline-block shrink-0"
+                  aria-hidden="true"
                 />
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="Your Email"
-                  className="bg-white/[0.04] border border-white/10 focus:border-brand-red rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors"
-                />
-                <input
-                  name="company"
-                  value={form.company}
-                  onChange={handleChange}
-                  placeholder="Company / Brand"
-                  className="bg-white/[0.04] border border-white/10 focus:border-brand-red rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors"
-                />
-                <input
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  placeholder="Your Phone"
-                  className="bg-white/[0.04] border border-white/10 focus:border-brand-red rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors"
-                />
+                Direct Collaboration
               </div>
 
-              <textarea
-                name="message"
-                value={form.message}
-                onChange={handleChange}
-                required
-                rows={5}
-                placeholder="Tell us about your project..."
-                className="bg-white/[0.04] border border-white/10 focus:border-brand-red rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors resize-none"
-              />
+              <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white mb-4">
+                HAVE A PROJECT IN MIND?
+              </h3>
 
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="inline-flex items-center justify-center gap-2 bg-brand-red hover:bg-red-600 disabled:opacity-60 text-white text-xs font-bold uppercase tracking-widest py-4 rounded-lg transition-colors cursor-pointer border-none"
+              <p className="text-neutral-400 text-sm sm:text-base leading-relaxed mb-8 max-w-md">
+                Tell us what you&apos;re planning. Let&apos;s turn your vision into something exceptional.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 sm:py-5 bg-brand-red hover:bg-red-600 text-white font-display font-bold uppercase tracking-widest text-xs sm:text-sm rounded-none transition-colors duration-200 no-underline group shadow-lg shadow-brand-red/10 w-full sm:w-auto"
               >
-                {status === "loading" ? "Sending..." : "Send Message"}
-                <Send className="w-3.5 h-3.5" />
-              </button>
+                <span>START A PROJECT →</span>
+              </Link>
 
-              {status === "error" && (
-                <p className="text-xs text-red-400 text-center">
-                  Something went wrong — please try again.
-                </p>
-              )}
-            </form>
-          )}
+              <div className="pt-6 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-neutral-500 uppercase tracking-wider">
+                <span>Average response time</span>
+                <span className="text-neutral-300 font-semibold">&lt; 24 Hours</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

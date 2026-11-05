@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { WHATSAPP_NAVBAR_CLICK_TO_CHAT_URL } from "@/components/ui/WhatsAppButton";
 
 const NAV_LINKS = [
   { name: "Home", path: "/", index: "01" },
@@ -62,19 +64,20 @@ export default function Navbar() {
           className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between"
           aria-label="Main Navigation"
         >
-          {/* Brand Logo Asset — Stacked mark matching Figma specification */}
+          {/* Brand Logo Asset — Official DesignTouch+ Brand Logo */}
           <Link
             href="/"
-            className="no-underline flex flex-col leading-none group select-none font-display py-1"
+            className="relative flex items-center select-none group py-1"
             aria-label="DesignTouch+ Home"
           >
-            <span className="text-xl font-extrabold tracking-[-0.04em] uppercase text-white">
-              DE<span className="text-brand-red">S</span>IGN
-            </span>
-            <span className="text-xl font-extrabold tracking-[-0.04em] uppercase text-white -mt-1">
-              T<span className="text-brand-green">O</span>UCH
-              <span className="text-brand-red ml-[1px]">+</span>
-            </span>
+            <Image
+              src="/assets/logos/design-touch-logo.png"
+              alt="DesignTouch+"
+              width={1315}
+              height={599}
+              priority
+              className="h-10 sm:h-11 w-auto object-contain transition-opacity duration-150 group-hover:opacity-90"
+            />
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -103,11 +106,14 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Desktop CTA */}
+          {/* Desktop CTA — Connects to WhatsApp Business */}
           <div className="hidden lg:flex items-center">
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-brand-red text-white text-xs font-bold uppercase tracking-[0.14em] font-display rounded-none border border-brand-red hover:bg-transparent hover:text-white transition-colors duration-150 no-underline"
+            <a
+              href={WHATSAPP_NAVBAR_CLICK_TO_CHAT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Let's Talk on WhatsApp"
+              className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-brand-red text-white text-xs font-bold uppercase tracking-[0.14em] font-display rounded-none border border-brand-red hover:bg-transparent hover:text-white transition-colors duration-150 no-underline cursor-pointer"
             >
               <span>Let&apos;s Talk</span>
               <svg
@@ -127,7 +133,7 @@ export default function Navbar() {
                   strokeLinejoin="miter"
                 />
               </svg>
-            </Link>
+            </a>
           </div>
 
           {/* Mobile Menu Toggle Button (No Lucide, Pure Geometric) */}
@@ -188,16 +194,16 @@ export default function Navbar() {
                   <Link
                     href="/"
                     onClick={() => setIsOpen(false)}
-                    className="no-underline flex flex-col leading-none font-display"
+                    className="relative flex items-center select-none"
                     aria-label="DesignTouch+ Home"
                   >
-                    <span className="text-lg font-extrabold tracking-[-0.04em] uppercase text-white">
-                      DE<span className="text-brand-red">S</span>IGN
-                    </span>
-                    <span className="text-lg font-extrabold tracking-[-0.04em] uppercase text-white -mt-1">
-                      T<span className="text-brand-green">O</span>UCH
-                      <span className="text-brand-red ml-[1px]">+</span>
-                    </span>
+                    <Image
+                      src="/assets/logos/design-touch-logo.png"
+                      alt="DesignTouch+"
+                      width={1315}
+                      height={599}
+                      className="h-9 w-auto object-contain"
+                    />
                   </Link>
 
                   <button
@@ -259,12 +265,15 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Mobile Drawer Bottom Section */}
+              {/* Mobile Drawer Bottom Section — Connects to WhatsApp Business */}
               <div className="pt-6 border-t border-white/[0.08] space-y-5">
-                <Link
-                  href="/contact"
+                <a
+                  href={WHATSAPP_NAVBAR_CLICK_TO_CHAT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center justify-center gap-2.5 py-3.5 bg-brand-red text-white text-xs font-bold uppercase tracking-[0.16em] font-display rounded-none border border-brand-red hover:bg-transparent hover:text-white transition-colors duration-150 no-underline"
+                  aria-label="Let's Talk on WhatsApp"
+                  className="w-full flex items-center justify-center gap-2.5 py-3.5 bg-brand-red text-white text-xs font-bold uppercase tracking-[0.16em] font-display rounded-none border border-brand-red hover:bg-transparent hover:text-white transition-colors duration-150 no-underline cursor-pointer"
                 >
                   <span>Let&apos;s Talk</span>
                   <svg
@@ -284,7 +293,7 @@ export default function Navbar() {
                       strokeLinejoin="miter"
                     />
                   </svg>
-                </Link>
+                </a>
 
                 <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-widest text-neutral-500 pt-1">
                   <span>Creative Production</span>

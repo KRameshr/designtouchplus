@@ -46,11 +46,11 @@ const BlogGrid = ({ posts = [], activeCategory = "", searchQuery = "" }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6">
       {posts.map((post) => (
         <article
           key={post.id}
-          className="group flex flex-col bg-[#0d0d0d] border border-white/[0.08] hover:border-white/25 rounded-none overflow-hidden transition-all duration-300 hover:bg-[#111111] hover:-translate-y-0.5 h-full"
+          className="group flex flex-col bg-[#0d0d0d] border border-white/[0.08] hover:border-white/25 rounded-none overflow-hidden transition-all duration-300 hover:bg-[#111111] hover:-translate-y-0.5 h-full w-full min-w-0"
         >
           <Link
             href={`/blog/${post.slug}`}

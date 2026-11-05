@@ -12,7 +12,7 @@ import {
 } from "@/lib/api";
 
 export const metadata = {
-  title: "Services | DesignTouch+",
+  title: "Services",
   description:
     "Video editing, motion graphics, social media content, YouTube management, graphic design, thumbnail design, and commercial video services.",
 };

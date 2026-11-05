@@ -1,7 +1,9 @@
-import { Inter, Syne } from "next/font/google";
+import { Inter, Syne, Poppins } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { getCompanyInfo } from "@/lib/api";
+import WhatsAppButton from "@/components/ui/WhatsAppButton";
+import ChatbotWidget from "@/components/chat/ChatbotWidget";
+import { getCompanyInfo, getContactPageContent } from "@/lib/api";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,8 +19,18 @@ const syne = Syne({
   display: "swap",
 });
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins",
+  display: "swap",
+});
+
 export const metadata = {
-  title: "DesignTouch+ | Creative Video Editing & Motion Graphics Agency",
+  title: {
+    default: "DesignTouch+ | Creative Studio",
+    template: "%s | DesignTouch+",
+  },
   description:
     "We create videos that grow brands. Video editing, motion graphics, social media content, and YouTube management for businesses and creators.",
 };
@@ -26,14 +38,19 @@ export const metadata = {
 export default async function RootLayout({ children }) {
   // Fetched once here (server-side) and passed down to Footer, since it
   // appears on every page — avoids every page re-fetching the same data.
-  const companyInfo = await getCompanyInfo().catch(() => null);
+  const [companyInfo, contactContent] = await Promise.all([
+    getCompanyInfo().catch(() => null),
+    getContactPageContent().catch(() => null),
+  ]);
 
   return (
-    <html lang="en" className={`${inter.variable} ${syne.variable}`}>
+    <html lang="en" className={`${inter.variable} ${syne.variable} ${poppins.variable}`}>
       <body className="font-sans bg-[#080808] text-white antialiased">
         <Navbar />
         {children}
-        <Footer companyInfo={companyInfo} />
+        <Footer companyInfo={companyInfo} contactContent={contactContent} />
+        <WhatsAppButton />
+        <ChatbotWidget />
       </body>
     </html>
   );

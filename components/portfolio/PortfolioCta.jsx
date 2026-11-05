@@ -2,8 +2,8 @@ import Link from "next/link";
 
 export default function PortfolioCta() {
   return (
-    <section className="bg-[#0a0a0a] text-white px-4 sm:px-6 py-16 sm:py-20 border-b border-white/[0.08]">
-      <div className="max-w-7xl mx-auto">
+    <section className="bg-[#0a0a0a] text-white py-16 sm:py-20 border-b border-white/[0.08]">
+      <div className="global-container w-[calc(100%-32px)] sm:w-[calc(100%-64px)] lg:w-[calc(100%-120px)] max-w-7xl max-w-[1440px] mx-auto">
         <div className="bg-[#0d0d0d] border border-white/10 border-t-2 border-t-brand-red p-8 sm:p-12 lg:p-16 flex flex-col lg:flex-row lg:items-center justify-between gap-8 rounded-none">
           <div className="max-w-2xl">
             {/* Eyebrow */}

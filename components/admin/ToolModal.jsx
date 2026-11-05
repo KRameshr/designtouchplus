@@ -486,7 +486,7 @@ export default function ToolModal({ tool, onClose, onSaved }) {
             </div>
 
             {/* Selected Icon Filename & Live Preview Banner */}
-            <div className="flex items-center justify-between gap-3 mt-2.5 px-3.5 py-2.5 bg-[#0b0b0b] border border-white/10 rounded-[8px]">
+            <div className="flex items-center justify-between gap-3 mt-2.5 px-3.5 py-2.5 bg-[#0b0b0b] border border-white/10 rounded-none">
               <div className="flex items-center gap-3 min-w-0">
                 {selectedIconMeta.hasIcon && selectedIconMeta.src ? (
                   <img
@@ -497,7 +497,7 @@ export default function ToolModal({ tool, onClose, onSaved }) {
                     className="w-9 h-9 object-contain shrink-0"
                   />
                 ) : (
-                  <span className="w-9 h-9 rounded-[8px] bg-[#141414] border border-white/15 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-neutral-200">
+                  <span className="w-9 h-9 rounded-none bg-[#141414] border border-white/15 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-neutral-200">
                     {previewMonogram}
                   </span>
                 )}

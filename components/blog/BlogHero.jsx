@@ -102,7 +102,7 @@ export default function BlogHero({ content: initialContent = null }) {
       </div>
 
       {/* Main Content (Left Aligned, Vertically Centered with exact 3-line heading layout) */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
         <div className="max-w-xl lg:max-w-2xl xl:max-w-[700px]">
           {/* Eyebrow - Subtle fade-in animation */}
           <motion.div

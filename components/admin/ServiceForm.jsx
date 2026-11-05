@@ -260,7 +260,7 @@ export default function ServiceForm({ service, onClose, onSaved }) {
           </div>
 
           {/* Live Card Icon & Accent Preview */}
-          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-[8px]">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-none">
             <div className="flex items-center gap-3.5">
               <div style={{ color: resolvedTheme.hex }}>
                 <ServiceOutlineIcon

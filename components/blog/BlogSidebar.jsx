@@ -89,7 +89,7 @@ const BlogSidebar = ({
   };
 
   return (
-    <aside className="flex flex-col gap-8 sm:gap-10 lg:sticky lg:top-28">
+    <aside className="flex flex-col md:grid md:grid-cols-2 xl:flex xl:flex-col gap-8 sm:gap-10 xl:sticky xl:top-28 w-full">
       {/* 1. Article Search Bar (Top of Sidebar, Above Categories) */}
       {!hideSearch && (
         <section aria-label="Search articles">
@@ -216,7 +216,7 @@ const BlogSidebar = ({
       {/* Editorial Newsletter Box — Sharp Minimal Edges */}
       <section
         aria-label="Newsletter subscription"
-        className="relative bg-[#0d0d0d] border border-white/[0.08] rounded-none p-6 overflow-hidden"
+        className="relative bg-[#0d0d0d] border border-white/[0.08] rounded-none p-6 overflow-hidden md:col-span-2 xl:col-span-1"
       >
         <div
           className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-red via-brand-red/40 to-transparent"

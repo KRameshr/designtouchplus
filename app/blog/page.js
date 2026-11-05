@@ -15,7 +15,7 @@ import {
 } from "@/lib/api";
 
 export const metadata = {
-  title: "Blog | DesignTouch+",
+  title: "Blog",
   description:
     "Tips, trends and tutorials on video editing, motion graphics, content creation and growing your brand.",
 };
@@ -71,11 +71,11 @@ export default async function BlogPage({ searchParams }) {
       <BlogHero content={blogHeroContent} />
 
       {/* Main Blog Articles & Sidebar Section */}
-      <section id="articles" className="scroll-mt-24 px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-20 sm:pb-28">
-        <div className="max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1536px] mx-auto space-y-6 sm:space-y-8">
+      <section id="articles" className="scroll-mt-24 px-6 pt-10 sm:pt-14 pb-20 sm:pb-28">
+        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
           
           {/* Category Navigation with Left/Right Scroll Arrows & Right-Aligned Article Search Bar */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_300px] 2xl:grid-cols-[1fr_320px] gap-6 lg:gap-8 xl:gap-10 items-center w-full relative z-30">
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-6 xl:gap-8 items-center w-full relative z-30">
             {/* Left side: Horizontal Category Navigation with Left/Right Arrows */}
             <div className="min-w-0 w-full">
               <BlogFilterTabs
@@ -129,10 +129,10 @@ export default async function BlogPage({ searchParams }) {
             </div>
           )}
 
-          {/* Row 3: Article Grid and Sidebar Start Below Category & Search Controls */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_300px] 2xl:grid-cols-[1fr_320px] gap-8 lg:gap-8 xl:gap-10 items-start pt-2 relative z-10">
+          {/* Article Grid and Sidebar */}
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-8 xl:gap-8 items-start pt-2 relative z-10">
             {/* Main Articles Column */}
-            <div className="min-w-0">
+            <div className="min-w-0 w-full">
               {/* Articles Grid */}
               <BlogGrid
                 posts={postsPage.content}
@@ -149,14 +149,16 @@ export default async function BlogPage({ searchParams }) {
               />
             </div>
 
-            {/* Sidebar (Hide redundant search bar as it now has a dedicated full-width row) */}
-            <BlogSidebar
-              categoryCounts={categoryCounts}
-              popularPosts={popularPosts}
-              activeCategory={category}
-              defaultQuery={query}
-              hideSearch={true}
-            />
+            {/* Sidebar (Hide redundant search bar as it now has a dedicated top row) */}
+            <div className="w-full">
+              <BlogSidebar
+                categoryCounts={categoryCounts}
+                popularPosts={popularPosts}
+                activeCategory={category}
+                defaultQuery={query}
+                hideSearch={true}
+              />
+            </div>
           </div>
         </div>
       </section>

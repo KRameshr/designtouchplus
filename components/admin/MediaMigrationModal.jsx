@@ -189,7 +189,7 @@ export default function MediaMigrationModal({ isOpen, onClose, onMigrated }) {
                           <td className="py-2.5 px-3">
                             <span className="font-bold text-white block">{item.projectTitle}</span>
                             <span className="text-[10px] font-mono text-neutral-400">
-                              {item.categoryName} // {item.contentType}
+                              {item.categoryName}{" // "}{item.contentType}
                             </span>
                           </td>
 

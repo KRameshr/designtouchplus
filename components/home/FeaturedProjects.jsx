@@ -1,372 +1,166 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import Link from "next/link";
 
-const CATEGORY_MAP = {
-  YOUTUBE: "YouTube",
-  COMMERCIAL: "Commercial",
-  REAL_ESTATE: "Real Estate",
-  INSTAGRAM_REELS: "Reels / 9:16",
-  MOTION_GRAPHICS: "Motion Graphics",
-  CORPORATE: "Corporate",
-};
-
-function formatCategory(category) {
-  if (!category) return "Selected Work";
-  return CATEGORY_MAP[category] || category.replace(/_/g, " ");
-}
-
 /* =========================================================================
-   SECTION A: FEATURED VIDEO EDITING
+   SECTION A: FEATURED VIDEO EDITING (CINEMATIC 3 × 2 GALLERY)
    ========================================================================= */
-function FeaturedVideoSection({ videos = [] }) {
-  const [playingId, setPlayingId] = useState(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const scrollRef = useRef(null);
-  const videoRefs = useRef({});
+const PAGE_SIZE = 6;
 
-  const total = videos.length;
-
-  const updateScrollState = () => {
-    if (!scrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth, children } = scrollRef.current;
-    setCanScrollLeft(scrollLeft > 10);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-
-    if (children && children.length > 0) {
-      let closestIdx = 0;
-      let minDiff = Infinity;
-      for (let i = 0; i < children.length; i++) {
-        const diff = Math.abs(children[i].offsetLeft - scrollLeft);
-        if (diff < minDiff) {
-          minDiff = diff;
-          closestIdx = i;
-        }
-      }
-      setActiveIndex(closestIdx);
-    }
-  };
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    updateScrollState();
-    el.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
-
-    return () => {
-      el.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [total]);
-
-  if (!videos || videos.length === 0) {
-    return null;
+function getVideoPoster(videoUrl) {
+  if (!videoUrl?.includes("res.cloudinary.com") || !videoUrl.includes("/video/upload/")) {
+    return undefined;
   }
 
-  const scrollToSlide = (index) => {
-    if (!scrollRef.current) return;
-    const children = scrollRef.current.children;
-    if (children && children[index]) {
-      children[index].scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "start",
-      });
+  return videoUrl
+    .replace("/video/upload/", "/video/upload/so_0/")
+    .replace(/\.(mp4|mov|webm)(\?.*)?$/i, ".jpg$2");
+}
+
+function FeaturedVideoSection({ videos = [] }) {
+  const [activeMediaId, setActiveMediaId] = useState(null);
+  const [videoErrors, setVideoErrors] = useState({});
+  const [imageErrors, setImageErrors] = useState({});
+  const videoRefs = useRef({});
+
+  if (!videos.length) return null;
+
+  const featuredVideos = videos.slice(0, PAGE_SIZE);
+
+  const stopPreview = (projectId) => {
+    const video = videoRefs.current[projectId];
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
     }
+    setActiveMediaId((current) => (current === projectId ? null : current));
   };
 
-  const handlePrev = () => {
-    if (activeIndex > 0) {
-      scrollToSlide(activeIndex - 1);
-    }
-  };
+  const playPreview = (projectId) => {
+    const video = videoRefs.current[projectId];
+    if (!video || videoErrors[projectId]) return;
 
-  const handleNext = () => {
-    if (activeIndex < total - 1) {
-      scrollToSlide(activeIndex + 1);
-    }
-  };
-
-  const togglePlay = (projectId) => {
-    const currentVideo = videoRefs.current[projectId];
-    if (!currentVideo) return;
-
-    if (playingId === projectId) {
-      currentVideo.pause();
-      setPlayingId(null);
-    } else {
-      if (playingId && videoRefs.current[playingId]) {
-        videoRefs.current[playingId].pause();
+    if (activeMediaId && activeMediaId !== projectId) {
+      const previousVideo = videoRefs.current[activeMediaId];
+      if (previousVideo) {
+        previousVideo.pause();
+        previousVideo.currentTime = 0;
       }
-      currentVideo.play().catch(() => {});
-      setPlayingId(projectId);
     }
+
+    setActiveMediaId(projectId);
+    video.muted = true;
+    video.currentTime = 0;
+    const playPromise = video.play();
+    if (playPromise) playPromise.catch(() => {});
   };
 
   return (
-    <section className="bg-[#080808] text-white px-4 sm:px-6 py-16 sm:py-20 lg:py-24 border-b border-white/[0.08] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        {/* Editorial Section Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10 sm:mb-12">
-          <div className="max-w-2xl">
-            {/* Eyebrow */}
-            <div className="flex items-center gap-2 mb-3 sm:mb-3.5">
-              <span className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0" aria-hidden="true" />
-              <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.24em] text-neutral-400">
-                OUR WORK // SELECTED EDITS
-              </span>
+    <section
+      id="featured-videos"
+      aria-labelledby="featured-videos-heading"
+      className="relative overflow-hidden border-b border-white/[0.08] bg-[#080808] py-14 text-white sm:py-16 lg:py-20"
+    >
+      <div className="global-container">
+        <div className="mb-8 grid grid-cols-1 items-end gap-6 sm:mb-10 lg:grid-cols-2 lg:gap-10">
+          <div className="min-w-0">
+            <div className="mb-3 inline-flex items-center gap-2.5 text-[10px] font-mono font-semibold uppercase tracking-[0.22em] text-neutral-300 sm:text-[11px]">
+              <span className="h-2 w-2 shrink-0 bg-brand-red" aria-hidden="true" />
+              <span>OUR WORK // VIDEO EDITING</span>
             </div>
-
-            {/* Headline */}
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black uppercase leading-[1.05] tracking-tight text-white">
-              Featured <span className="text-white">Video Editing</span>
+            <h2 id="featured-videos-heading" className="font-display text-4xl font-black uppercase leading-[0.88] tracking-[-0.04em] sm:text-5xl md:text-6xl lg:text-7xl">
+              <span className="block text-white">VIDEO</span>
+              <span className="block text-brand-red">PORTFOLIO</span>
             </h2>
-
-            <p className="text-neutral-400 text-xs sm:text-sm mt-3 font-normal leading-relaxed max-w-xl">
-              High-impact commercial edits, viral short-form reels, and cinematic storytelling crafted for category-defining creators and brands.
-            </p>
           </div>
-
-          {/* Controls & View All Link */}
-          <div className="flex items-center justify-between lg:justify-end gap-5 pt-3 lg:pt-0 border-t lg:border-t-0 border-white/[0.08]">
-            <div className="font-mono text-xs uppercase tracking-[0.2em] text-neutral-400 select-none">
-              <span className="text-white font-bold">{String(activeIndex + 1).padStart(2, "0")}</span>
-              <span className="mx-1.5 text-neutral-600">/</span>
-              <span>{String(total).padStart(2, "0")}</span>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={handlePrev}
-                disabled={!canScrollLeft && activeIndex === 0}
-                aria-label="Previous video project"
-                className="w-9 h-9 sm:w-10 sm:h-10 border border-white/15 hover:border-white hover:bg-white hover:text-black disabled:opacity-25 disabled:hover:border-white/15 disabled:hover:bg-transparent disabled:hover:text-white text-white flex items-center justify-center transition-colors rounded-none cursor-pointer"
-              >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M10 6H2M2 6L5.5 2.5M2 6L5.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-                </svg>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={!canScrollRight && activeIndex >= total - 1}
-                aria-label="Next video project"
-                className="w-9 h-9 sm:w-10 sm:h-10 border border-white/15 hover:border-white hover:bg-white hover:text-black disabled:opacity-25 disabled:hover:border-white/15 disabled:hover:bg-transparent disabled:hover:text-white text-white flex items-center justify-center transition-colors rounded-none cursor-pointer"
-              >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-                </svg>
-              </button>
-            </div>
-
-            <Link
-              href="/portfolio#video-editing"
-              className="hidden lg:inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.16em] text-neutral-300 hover:text-white transition-colors no-underline pl-2 py-2"
-            >
-              <span>View All Videos</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-              </svg>
-            </Link>
+          <div className="flex min-w-0 items-end lg:justify-end">
+            <p className="max-w-xl text-sm leading-relaxed text-neutral-400 sm:text-base lg:max-w-lg lg:text-right">
+              A collection of our best video editing work — commercial edits, brand reels, YouTube content, and cinematic visual stories.
+            </p>
           </div>
         </div>
 
-        {/* Video Track */}
         <div
-          ref={scrollRef}
-          className="flex lg:grid lg:grid-cols-4 gap-5 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 scrollbar-none snap-x snap-mandatory items-stretch"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          data-testid="featured-video-grid"
+          className="grid grid-cols-1 gap-0 md:grid-cols-2 lg:grid-cols-3"
         >
-          {videos.map((project, idx) => {
-            const isPlaying = playingId === project.id;
+          {featuredVideos.map((project, index) => {
+            const projectId = project.id || project.slug || `featured-video-${index}`;
             const hasVideo = Boolean(project.videoUrl);
-            const mediaSrc = project.thumbnailUrl || project.imageUrl;
+            const mediaSrc = project.thumbnailUrl || project.imageUrl || getVideoPoster(project.videoUrl);
+            const hasVideoError = Boolean(videoErrors[projectId]);
+            const hasImageError = Boolean(imageErrors[projectId]);
 
             return (
               <article
-                key={project.id || idx}
-                className="w-[82vw] sm:w-[360px] lg:w-full min-w-[82vw] sm:min-w-[360px] lg:min-w-0 snap-start shrink-0 flex flex-col h-full bg-[#0c0c0c] border border-white/10 hover:border-white/25 transition-all duration-200 rounded-none group"
+                key={projectId}
+                data-testid="featured-video-card"
+                className="featured-video-card group relative min-w-0 overflow-hidden bg-black"
+                onMouseEnter={() => playPreview(projectId)}
+                onMouseLeave={() => stopPreview(projectId)}
               >
-                {/* Consistent 16:9 Media Container */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-black border-b border-white/[0.08] select-none">
-                  {hasVideo ? (
-                    <>
-                      <video
-                        ref={(el) => {
-                          if (el) videoRefs.current[project.id] = el;
-                        }}
-                        src={project.videoUrl}
-                        poster={mediaSrc || undefined}
-                        playsInline
-                        muted
-                        preload="metadata"
-                        onEnded={() => setPlayingId(null)}
-                        onPause={() => {
-                          if (playingId === project.id) setPlayingId(null);
-                        }}
-                        onPlay={() => {
-                          if (playingId !== project.id) setPlayingId(project.id);
-                        }}
-                        onClick={() => togglePlay(project.id)}
-                        className="w-full h-full object-contain bg-black cursor-pointer"
-                        aria-label={project.title}
-                      />
-
-                      {/* Play / Pause Control Overlay */}
-                      <div className="absolute bottom-3 left-3 z-20">
-                        <button
-                          type="button"
-                          onClick={() => togglePlay(project.id)}
-                          aria-label={isPlaying ? `Pause ${project.title}` : `Play ${project.title}`}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-black/90 hover:bg-white hover:text-black text-white text-[10px] font-mono font-bold uppercase tracking-[0.16em] border border-white/20 hover:border-white transition-colors rounded-none cursor-pointer"
-                        >
-                          {isPlaying ? (
-                            <>
-                              <svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-                                <rect x="2" y="2" width="3" height="8" />
-                                <rect x="7" y="2" width="3" height="8" />
-                              </svg>
-                              <span>Pause</span>
-                            </>
-                          ) : (
-                            <>
-                              <svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-                                <path d="M3 2L10 6L3 10V2Z" />
-                              </svg>
-                              <span>Play Reel</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </>
-                  ) : mediaSrc ? (
-                    <div className="relative w-full h-full overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={mediaSrc}
-                        alt={project.title}
-                        className="w-full h-full object-contain bg-black group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-colors flex items-center justify-center">
-                        <span className="w-10 h-10 rounded-none bg-black/80 border border-white/20 group-hover:border-white text-white group-hover:bg-white group-hover:text-black flex items-center justify-center transition-all">
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                            <path d="M3 2L10 6L3 10V2Z" />
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
+                <div data-testid="video-card-thumbnail-container" className="relative aspect-[16/9] overflow-hidden bg-[#111]">
+                  {hasVideo && !hasVideoError ? (
+                    <video
+                      ref={(element) => {
+                        if (element) videoRefs.current[projectId] = element;
+                        else delete videoRefs.current[projectId];
+                      }}
+                      src={project.videoUrl}
+                      poster={mediaSrc && !hasImageError ? mediaSrc : undefined}
+                      playsInline
+                      muted
+                      loop
+                      preload="metadata"
+                      onError={() => setVideoErrors((current) => ({ ...current, [projectId]: true }))}
+                      className="featured-video-video h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                      aria-label={`Preview of ${project.title}`}
+                    />
+                  ) : mediaSrc && !hasImageError ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={mediaSrc}
+                      alt={project.title}
+                      onError={() => setImageErrors((current) => ({ ...current, [projectId]: true }))}
+                      className="featured-video-image h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                    />
                   ) : (
-                    <div className="w-full h-full bg-[#111111] flex flex-col justify-between p-4 relative">
-                      <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500">
-                        <span>[ARCHIVE // 4K]</span>
-                        <span className="text-brand-red font-semibold">● REEL</span>
-                      </div>
-                      <div className="py-2">
-                        <span className="text-[10px] font-mono text-neutral-500 block mb-1 uppercase tracking-widest">
-                          {formatCategory(project.category)}
-                        </span>
-                        <h4 className="font-display text-sm font-bold uppercase text-white/90 line-clamp-1">
-                          {project.title}
-                        </h4>
-                      </div>
-                      <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 border-t border-white/5 pt-2">
-                        <span>{project.videoAspectRatio || "16:9"}</span>
-                        <span>{project.duration || "MASTER"}</span>
-                      </div>
+                    <div className="flex h-full w-full items-center justify-center px-5 text-center text-sm font-semibold text-neutral-300">
+                      {project.title}
                     </div>
                   )}
 
-                  {/* Category Badge — Top Left */}
-                  <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
-                    <span className="inline-flex items-center gap-1.5 bg-black/85 border border-white/15 px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.16em] text-neutral-200">
-                      <span className="w-1.5 h-1.5 bg-brand-red rounded-none" aria-hidden="true" />
-                      {project.categoryName || formatCategory(project.category)}
-                    </span>
-                  </div>
+                  <div className="featured-video-overlay absolute inset-0 bg-black/60 transition-opacity duration-300">
+                    <button
+                      type="button"
+                      onClick={() => playPreview(projectId)}
+                      disabled={!hasVideo || hasVideoError}
+                      aria-label={`Play preview of ${project.title}`}
+                      className="absolute left-1/2 top-1/2 inline-flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/10 text-white backdrop-blur-sm transition-colors hover:border-brand-red hover:bg-brand-red disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:h-14 sm:w-14"
+                    >
+                      <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true">
+                        <path d="M15 7.27a2 2 0 0 1 0 3.46L3 17.65A2 2 0 0 1 0 15.92V2.08A2 2 0 0 1 3 .35l12 6.92Z" />
+                      </svg>
+                    </button>
 
-                  {/* Duration & Aspect Ratio Badges — Top Right */}
-                  <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none flex items-center gap-1.5">
-                    {project.videoAspectRatio && project.videoAspectRatio !== "AUTO" && (
-                      <span className="inline-flex items-center bg-black/90 border border-white/20 px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase text-neutral-300">
-                        {project.videoAspectRatio}
-                      </span>
-                    )}
-                    {isPlaying ? (
-                      <span className="inline-flex items-center gap-1.5 bg-black/90 border border-brand-red/40 px-2 py-0.5 text-[9px] font-mono uppercase tracking-widest text-brand-red">
-                        <span className="w-1.5 h-1.5 bg-brand-red rounded-none animate-pulse" />
-                        Live
-                      </span>
-                    ) : project.duration ? (
-                      <span className="inline-flex items-center bg-black/85 border border-white/15 px-2 py-0.5 text-[10px] font-mono text-neutral-300">
-                        {project.duration}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-
-                {/* Details */}
-                <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 mb-2">
-                      <span>PROJECT // {String(idx + 1).padStart(2, "0")}</span>
-                      {project.subCategory && (
-                        <span className="uppercase tracking-wider text-neutral-400">
-                          {project.subCategory}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="font-display text-sm sm:text-base font-bold uppercase tracking-tight text-white mb-1.5 line-clamp-1">
+                    <div className="absolute bottom-3 left-3 right-3 flex min-w-0 items-end justify-between gap-3 sm:bottom-4 sm:left-4 sm:right-4">
+                      <div className="min-w-0 max-w-[62%]">
+                        <h3 className="line-clamp-2 break-words font-display text-sm font-bold uppercase leading-tight text-white sm:text-base">
+                        {project.title}
+                        </h3>
+                        {project.duration && (
+                          <p className="mt-1 text-[10px] font-mono uppercase tracking-[0.15em] text-neutral-300">
+                            {project.duration}
+                          </p>
+                        )}
+                      </div>
                       <Link
                         href={`/portfolio/${project.slug || project.id}`}
-                        className="hover:text-brand-red transition-colors no-underline text-white hover:underline"
+                        className="inline-flex min-h-9 shrink-0 items-center justify-center gap-1 bg-brand-red px-2.5 py-2 text-[9px] font-mono font-bold uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#dc2626] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:min-h-10 sm:px-3 sm:text-[10px] sm:tracking-[0.12em]"
                       >
-                        {project.title}
+                        VIEW PROJECT <span aria-hidden="true">→</span>
                       </Link>
-                    </h3>
-
-                    <p className="text-neutral-400 text-xs leading-relaxed line-clamp-2 font-normal min-h-[2.25rem]">
-                      {project.description || ""}
-                    </p>
-                  </div>
-
-                  {/* Bottom Footer */}
-                  <div className="mt-auto pt-3 border-t border-white/[0.08] flex items-center justify-between">
-                    <Link
-                      href={`/portfolio/${project.slug || project.id}`}
-                      className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase tracking-[0.14em] text-neutral-400 group-hover:text-white transition-colors no-underline"
-                    >
-                      <span>Explore</span>
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                        className="group-hover:translate-x-0.5 transition-transform"
-                        aria-hidden="true"
-                      >
-                        <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-                      </svg>
-                    </Link>
-
-                    <div className="flex items-center gap-2">
-                      {project.videoAspectRatio && project.videoAspectRatio !== "AUTO" && (
-                        <span className="text-[10px] font-mono text-neutral-400">
-                          {project.videoAspectRatio}
-                        </span>
-                      )}
-                      {project.duration && (
-                        <span className="text-[10px] font-mono text-neutral-500">
-                          · {project.duration}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -374,298 +168,118 @@ function FeaturedVideoSection({ videos = [] }) {
             );
           })}
         </div>
-
-        {/* Mobile View All Link */}
-        <div className="mt-8 lg:hidden">
-          <Link
-            href="/portfolio#video-editing"
-            className="w-full py-3.5 border border-white/20 hover:border-white hover:bg-white hover:text-black text-white text-xs font-mono font-bold uppercase tracking-[0.16em] inline-flex items-center justify-center gap-2 transition-colors no-underline rounded-none"
-          >
-            <span>View All Videos</span>
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-            </svg>
-          </Link>
-        </div>
       </div>
+      <style jsx>{`
+        .featured-video-overlay { opacity: 1; }
+        @media (hover: hover) and (pointer: fine) {
+          .featured-video-overlay { opacity: 0; pointer-events: none; }
+          .featured-video-card:hover .featured-video-overlay,
+          .featured-video-card:focus-within .featured-video-overlay {
+            opacity: 1;
+            pointer-events: auto;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .featured-video-overlay,
+          .featured-video-video,
+          .featured-video-image { transition: none !important; }
+        }
+      `}</style>
     </section>
   );
 }
-
 /* =========================================================================
-   SECTION B: FEATURED THUMBNAIL DESIGN
+   SECTION B: FEATURED THUMBNAIL DESIGN (3 × 2 GRID WITH PAGINATION)
    ========================================================================= */
 function FeaturedThumbnailSection({ thumbnails = [] }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const scrollRef = useRef(null);
+  const [imageErrors, setImageErrors] = useState({});
+  const featuredThumbnails = thumbnails.slice(0, PAGE_SIZE);
 
-  const total = thumbnails.length;
-
-  const updateScrollState = () => {
-    if (!scrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth, children } = scrollRef.current;
-    setCanScrollLeft(scrollLeft > 10);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-
-    if (children && children.length > 0) {
-      let closestIdx = 0;
-      let minDiff = Infinity;
-      for (let i = 0; i < children.length; i++) {
-        const diff = Math.abs(children[i].offsetLeft - scrollLeft);
-        if (diff < minDiff) {
-          minDiff = diff;
-          closestIdx = i;
-        }
-      }
-      setActiveIndex(closestIdx);
-    }
-  };
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    updateScrollState();
-    el.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
-
-    return () => {
-      el.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [total]);
-
-  if (!thumbnails || thumbnails.length === 0) {
-    return null;
-  }
-
-  const scrollToSlide = (index) => {
-    if (!scrollRef.current) return;
-    const children = scrollRef.current.children;
-    if (children && children[index]) {
-      children[index].scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "start",
-      });
-    }
-  };
-
-  const handlePrev = () => {
-    if (activeIndex > 0) {
-      scrollToSlide(activeIndex - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (activeIndex < total - 1) {
-      scrollToSlide(activeIndex + 1);
-    }
-  };
+  if (featuredThumbnails.length === 0) return null;
 
   return (
-    <section className="bg-[#0a0a0a] text-white px-4 sm:px-6 py-16 sm:py-20 lg:py-24 border-b border-white/[0.08] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        {/* Editorial Section Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10 sm:mb-12">
+    <section
+      id="featured-thumbnails"
+      aria-label="Featured Thumbnail Design"
+      className="bg-[#0a0a0a] text-white py-16 sm:py-20 lg:py-24 border-b border-white/[0.08]"
+    >
+      <div className="global-container">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8 sm:mb-10">
           <div className="max-w-2xl">
-            {/* Eyebrow */}
             <div className="flex items-center gap-2 mb-3 sm:mb-3.5">
-              <span className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0" aria-hidden="true" />
+              <span className="w-2 h-2 bg-brand-red inline-block shrink-0" aria-hidden="true" />
               <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.24em] text-neutral-400">
                 PACKAGING // HIGH-CTR VISUALS
               </span>
             </div>
-
-            {/* Headline */}
             <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black uppercase leading-[1.05] tracking-tight text-white">
-              Featured <span className="text-white">Thumbnail Design</span>
+              <span className="block">FEATURED</span>
+              <span className="block text-[#F04444]">THUMBNAIL DESIGN</span>
             </h2>
-
             <p className="text-neutral-400 text-xs sm:text-sm mt-3 font-normal leading-relaxed max-w-xl">
               High-conversion YouTube packaging, bespoke typography, and high-impact visual hooks engineered to maximize click-through rate.
             </p>
           </div>
-
-          {/* Controls & View All Link */}
-          <div className="flex items-center justify-between lg:justify-end gap-5 pt-3 lg:pt-0 border-t lg:border-t-0 border-white/[0.08]">
-            <div className="font-mono text-xs uppercase tracking-[0.2em] text-neutral-400 select-none">
-              <span className="text-white font-bold">{String(activeIndex + 1).padStart(2, "0")}</span>
-              <span className="mx-1.5 text-neutral-600">/</span>
-              <span>{String(total).padStart(2, "0")}</span>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={handlePrev}
-                disabled={!canScrollLeft && activeIndex === 0}
-                aria-label="Previous thumbnail project"
-                className="w-9 h-9 sm:w-10 sm:h-10 border border-white/15 hover:border-white hover:bg-white hover:text-black disabled:opacity-25 disabled:hover:border-white/15 disabled:hover:bg-transparent disabled:hover:text-white text-white flex items-center justify-center transition-colors rounded-none cursor-pointer"
-              >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M10 6H2M2 6L5.5 2.5M2 6L5.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-                </svg>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={!canScrollRight && activeIndex >= total - 1}
-                aria-label="Next thumbnail project"
-                className="w-9 h-9 sm:w-10 sm:h-10 border border-white/15 hover:border-white hover:bg-white hover:text-black disabled:opacity-25 disabled:hover:border-white/15 disabled:hover:bg-transparent disabled:hover:text-white text-white flex items-center justify-center transition-colors rounded-none cursor-pointer"
-              >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-                </svg>
-              </button>
-            </div>
-
-            <Link
-              href="/portfolio#thumbnails"
-              className="hidden lg:inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.16em] text-neutral-300 hover:text-white transition-colors no-underline pl-2 py-2"
-            >
-              <span>View All Thumbnails</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-              </svg>
-            </Link>
-          </div>
+          <Link
+            href="/portfolio#thumbnails"
+            className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.16em] text-neutral-300 hover:text-white transition-colors no-underline py-2"
+          >
+            <span>View All Thumbnails</span>
+            <span aria-hidden="true">?</span>
+          </Link>
         </div>
 
-        {/* Thumbnail Track */}
         <div
-          ref={scrollRef}
-          className="flex lg:grid lg:grid-cols-4 gap-5 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 scrollbar-none snap-x snap-mandatory items-stretch"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          data-testid="featured-thumbnail-grid"
+          style={{ gap: "0.5%" }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch"
         >
-          {thumbnails.map((item, idx) => {
+          {featuredThumbnails.map((item, idx) => {
             const mediaSrc = item.thumbnailUrl || item.imageUrl;
-            const categoryLabel = item.categoryName || item.subCategory || "YouTube CTR";
+            const key = item.id || item.slug || idx;
+            const href = "/portfolio/" + (item.slug || item.id);
+            const hasImageError = Boolean(imageErrors[key]);
 
             return (
               <article
-                key={item.id || idx}
-                className="w-[82vw] sm:w-[320px] lg:w-full min-w-[82vw] sm:min-w-[320px] lg:min-w-0 snap-start shrink-0 flex flex-col h-full bg-[#0c0c0c] border border-white/10 hover:border-white/25 transition-all duration-200 rounded-none group"
+                key={key}
+                data-testid="featured-thumbnail-card"
+                className="group relative min-w-0 overflow-hidden bg-[#0c0c0c]"
               >
-                {/* 16:9 Thumbnail Image Frame (No Video Player) */}
-                <Link
-                  href={`/portfolio/${item.slug || item.id}`}
-                  className="relative aspect-[16/9] w-full overflow-hidden bg-[#141414] border-b border-white/[0.08] select-none block"
-                  aria-label={`View thumbnail details for ${item.title}`}
-                >
-                  {mediaSrc ? (
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#111]">
+                  {mediaSrc && !hasImageError ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={mediaSrc}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      alt={item.title || "Featured thumbnail design"}
+                      onError={() => setImageErrors((prev) => ({ ...prev, [key]: true }))}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.025]"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#111111] flex flex-col justify-between p-4 relative">
-                      <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500">
-                        <span>[CTR PACKAGING // 4K]</span>
-                        <span className="text-brand-red font-semibold">● ARTWORK</span>
-                      </div>
-                      <div className="py-2">
-                        <span className="text-[10px] font-mono text-neutral-500 block mb-1 uppercase tracking-widest">
-                          {categoryLabel}
-                        </span>
-                        <h4 className="font-display text-sm font-bold uppercase text-white/90 line-clamp-1">
-                          {item.title}
-                        </h4>
-                      </div>
-                      <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 border-t border-white/5 pt-2">
-                        <span>16:9 FORMAT</span>
-                        <span>HIGH CTR</span>
-                      </div>
+                    <div className="flex h-full w-full items-center justify-center bg-[#111] px-5 text-center">
+                      <span className="font-display text-xl sm:text-2xl font-black uppercase text-white">
+                        {item.title}
+                      </span>
                     </div>
                   )}
 
-                  {/* Category Badge — Top Left */}
-                  <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
-                    <span className="inline-flex items-center gap-1.5 bg-black/85 border border-white/15 px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.16em] text-neutral-200">
-                      <span className="w-1.5 h-1.5 bg-brand-red rounded-none" aria-hidden="true" />
-                      {categoryLabel}
-                    </span>
-                  </div>
-
-                  {/* CTR Badge — Top Right */}
-                  <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
-                    <span className="inline-flex items-center bg-black/85 border border-white/15 px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider text-neutral-300">
-                      16:9 CTR
-                    </span>
-                  </div>
-                </Link>
-
-                {/* Details */}
-                <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 mb-2">
-                      <span>PACKAGING // {String(idx + 1).padStart(2, "0")}</span>
-                      {item.subCategory && (
-                        <span className="uppercase tracking-wider text-neutral-400">
-                          {item.subCategory}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="font-display text-sm sm:text-base font-bold uppercase tracking-tight text-white mb-1.5 line-clamp-1">
-                      <Link
-                        href={`/portfolio/${item.slug || item.id}`}
-                        className="hover:text-brand-red transition-colors no-underline text-white hover:underline"
-                      >
-                        {item.title}
-                      </Link>
-                    </h3>
-
-                    <p className="text-neutral-400 text-xs leading-relaxed line-clamp-2 font-normal min-h-[2.25rem]">
-                      {item.description || ""}
-                    </p>
-                  </div>
-
-                  {/* Bottom Footer */}
-                  <div className="mt-auto pt-3 border-t border-white/[0.08] flex items-center justify-between">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" aria-hidden="true" />
+                  <h3 className="pointer-events-none absolute inset-x-4 bottom-4 z-10 font-display text-lg sm:text-xl font-black uppercase tracking-wide text-white drop-shadow-md">
+                    {item.title}
+                  </h3>
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100">
                     <Link
-                      href={`/portfolio/${item.slug || item.id}`}
-                      className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase tracking-[0.14em] text-neutral-400 group-hover:text-white transition-colors no-underline"
+                      href={href}
+                      aria-label={"View packaging for " + item.title}
+                      className="rounded-sm border border-brand-red bg-brand-red px-4 py-3 text-[11px] font-mono font-bold uppercase tracking-[0.14em] text-white no-underline transition-colors hover:bg-[#dc2626] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                     >
-                      <span>View Packaging</span>
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                        className="group-hover:translate-x-0.5 transition-transform"
-                        aria-hidden="true"
-                      >
-                        <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-                      </svg>
+                      VIEW PACKAGING <span aria-hidden="true">?</span>
                     </Link>
-
-                    <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-                      HIGH CTR
-                    </span>
                   </div>
                 </div>
               </article>
             );
           })}
-        </div>
-
-        {/* Mobile View All Link */}
-        <div className="mt-8 lg:hidden">
-          <Link
-            href="/portfolio#thumbnails"
-            className="w-full py-3.5 border border-white/20 hover:border-white hover:bg-white hover:text-black text-white text-xs font-mono font-bold uppercase tracking-[0.16em] inline-flex items-center justify-center gap-2 transition-colors no-underline rounded-none"
-          >
-            <span>View All Thumbnails</span>
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="square" />
-            </svg>
-          </Link>
         </div>
       </div>
     </section>

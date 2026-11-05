@@ -8,7 +8,12 @@ import {
   resolveProcessIconKey,
 } from "@/lib/processIcons";
 
-export default function ProcessStepModal({ step, onClose, onSaved }) {
+export default function ProcessStepModal({
+  step,
+  defaultPageType = "SERVICES",
+  onClose,
+  onSaved,
+}) {
   const isEditing = Boolean(step?.id);
   const initialIcon = isEditing
     ? resolveProcessIconKey(step.icon, step.title, step.stepNumber)
@@ -23,7 +28,7 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
           icon: initialIcon,
           displayOrder: step.displayOrder !== undefined ? step.displayOrder : 0,
           isActive: step.isActive !== undefined ? step.isActive : true,
-          pageType: step.pageType || "SERVICES",
+          pageType: step.pageType || defaultPageType || "SERVICES",
         }
       : {
           stepNumber: 1,
@@ -32,7 +37,7 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
           icon: "discover",
           displayOrder: 0,
           isActive: true,
-          pageType: "SERVICES",
+          pageType: defaultPageType || "SERVICES",
         }
   );
 
@@ -196,14 +201,14 @@ export default function ProcessStepModal({ step, onClose, onSaved }) {
                     role="radio"
                     aria-checked={isSelected}
                     onClick={() => handleSelectIcon(opt.key)}
-                    className={`flex flex-col items-center justify-center gap-2 p-3 border text-center cursor-pointer transition-all ${
+                    className={`flex flex-col items-center justify-center gap-2 p-3 border rounded-none text-center cursor-pointer transition-all ${
                       isSelected
                         ? "bg-brand-red/[0.12] border-brand-red text-white shadow-[0_0_16px_-6px_rgba(239,68,68,0.45)]"
                         : "bg-white/[0.02] border-white/10 hover:border-white/30 text-neutral-400 hover:text-white"
                     }`}
                   >
                     <span
-                      className={`w-11 h-11 rounded-full flex items-center justify-center border transition-colors ${
+                      className={`w-11 h-11 rounded-none flex items-center justify-center border transition-colors ${
                         isSelected
                           ? "bg-[#0b0b0b] border-brand-red/70"
                           : "bg-[#0b0b0b] border-white/20"

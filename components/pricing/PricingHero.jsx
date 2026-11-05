@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { SlidersHorizontal, MonitorPlay } from "lucide-react";
 import { getPricingPageContent, getPricingHeroBanners } from "@/lib/api";
 
 const SLIDE_INTERVAL_MS = 1500; // Requirement: auto-advance every 1.5s
@@ -258,261 +257,239 @@ export default function PricingHero({ content = null, initialBanners = [] }) {
   return (
     <section
       id="pricing-hero"
-      className="relative w-full max-w-full bg-[#080808] text-white px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 lg:pt-12 xl:pt-14 pb-12 sm:pb-14 lg:pb-16 xl:pb-18 border-b border-white/[0.08] overflow-x-clip"
+      aria-label="Pricing Hero"
+      className="relative w-full overflow-hidden bg-[#080808] min-h-[460px] sm:min-h-[520px] md:min-h-[560px] lg:h-[600px] xl:h-[640px] flex items-center border-b border-white/[0.08]"
     >
-      <div className="relative w-full max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 sm:gap-10 lg:gap-8 xl:gap-10">
-          {/* Left Column: Editorial Copy & Actions */}
-          <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="relative z-10 w-full lg:w-[40%] xl:w-[39%] shrink-0 flex flex-col justify-center"
+      {/* Background Multi-Banner Carousel spanning full viewport width edge-to-edge */}
+      <div
+        data-testid="pricing-hero-banner-container"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onFocus={() => setIsPaused(true)}
+        onBlur={() => setIsPaused(false)}
+        className="absolute inset-0 w-full h-full z-0 overflow-hidden"
+      >
+        {hasBanners ? (
+          <div
+            data-testid="pricing-hero-carousel-track"
+            className="flex w-full h-full will-change-transform"
+            style={{
+              transform: `translate3d(-${effectiveTrackIndex * 100}%, 0, 0)`,
+              transition: shouldAnimateSlide
+                ? `transform ${transitionDurationMs}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                : "none",
+            }}
           >
-            {/* Eyebrow Label */}
-            {eyebrow && (
-              <div className="flex items-center gap-2.5 mb-4 sm:mb-5">
-                <span
-                  className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0"
-                  aria-hidden="true"
-                />
-                <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.22em] text-neutral-400">
-                  {eyebrow}
-                </span>
-              </div>
-            )}
+            {renderedSlides.map((banner, idx) => {
+              const url = banner.imageUrl.trim();
+              const slideKey = banner._isLoopClone
+                ? `pricing-loop-clone-${banner.id || url}`
+                : banner.id || `${url}-${idx}`;
+              const altText =
+                banner._isLoopClone
+                  ? ""
+                  : banner.altText ||
+                    banner.label ||
+                    `Pricing Hero Banner ${idx + 1}`;
+              const objectPosition =
+                banner.objectPosition ||
+                banner.heroBannerObjectPosition ||
+                "center right";
 
-            {/* Display Headline */}
-            <h1 className="font-display text-4xl sm:text-5xl md:text-5xl lg:text-[42px] xl:text-[48px] 2xl:text-[54px] font-extrabold uppercase leading-[1.08] tracking-[-0.035em] text-white mb-5 sm:mb-6 [overflow-wrap:normal] [word-break:keep-all] [hyphens:none]">
-              {line1 && <span className="block">{line1}</span>}
-              {(line2 || highlight) && (
-                <span className="block">
-                  {line2 ? `${line2} ` : ""}
-                  {highlight ? (
-                    <span className={getHighlightClass()}>{highlight}</span>
-                  ) : null}
-                </span>
-              )}
-            </h1>
-
-            {/* Subheading / Description */}
-            {description && (
-              <p className="text-neutral-400 text-sm sm:text-base leading-relaxed mb-7 sm:mb-8 max-w-lg font-normal">
-                {description}
-              </p>
-            )}
-
-            {/* Action CTAs */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4">
-              {primaryCtaText && (
-                <Link
-                  href={primaryCtaLink}
-                  className="inline-flex items-center justify-center gap-2.5 bg-brand-red text-white text-xs font-bold uppercase tracking-[0.16em] font-display px-6 sm:px-7 py-3.5 sm:py-4 rounded-none border border-brand-red hover:bg-[#dc2626] transition-all duration-150 no-underline cursor-pointer shadow-[0_4px_20px_rgba(239,68,68,0.2)] hover:shadow-[0_4px_25px_rgba(239,68,68,0.35)]"
-                >
-                  <span>{primaryCtaText}</span>
-                  <svg
-                    width="11"
-                    height="11"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="translate-y-[-0.5px]"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                      strokeLinecap="square"
-                      strokeLinejoin="miter"
-                    />
-                  </svg>
-                </Link>
-              )}
-
-              {secondaryCtaText && (
-                <Link
-                  href={secondaryCtaLink}
-                  className="inline-flex items-center justify-center gap-2.5 border border-white/20 hover:border-white hover:bg-white hover:text-black text-white text-xs font-bold uppercase tracking-[0.16em] font-display px-6 sm:px-7 py-3.5 sm:py-4 rounded-none transition-colors duration-150 no-underline cursor-pointer"
-                >
-                  <span>{secondaryCtaText}</span>
-                </Link>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Right Column: Prominent Cinematic Workstation Carousel */}
-          <div className="relative w-full lg:w-[58%] xl:w-[59%] shrink-0 flex items-center justify-center">
-            {hasBanners ? (
-              <div
-                data-testid="pricing-hero-banner-container"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
-                onFocus={() => setIsPaused(true)}
-                onBlur={() => setIsPaused(false)}
-                className="relative w-full aspect-[16/10] sm:aspect-[1.7/1] lg:aspect-[1.65/1] xl:aspect-[1.68/1] min-h-[240px] sm:min-h-[280px] lg:min-h-[360px] xl:min-h-[400px] max-h-[380px] sm:max-h-[440px] lg:max-h-[460px] xl:max-h-[500px] 2xl:max-h-[540px] bg-[#080808] rounded-[4px] overflow-hidden select-none border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.65)] group"
-              >
-                {/* Horizontal sliding track */}
+              return (
                 <div
-                  data-testid="pricing-hero-carousel-track"
-                  className="flex w-full h-full rounded-[4px] will-change-transform"
-                  style={{
-                    transform: `translate3d(-${effectiveTrackIndex * 100}%, 0, 0)`,
-                    transition: shouldAnimateSlide
-                      ? `transform ${transitionDurationMs}ms cubic-bezier(0.4, 0, 0.2, 1)`
-                      : "none",
-                  }}
+                  key={slideKey}
+                  className="relative w-full h-full min-w-full shrink-0 grow-0 basis-full overflow-hidden bg-[#080808]"
+                  aria-hidden={
+                    idx !== activeIndicatorIndex || Boolean(banner._isLoopClone)
+                  }
                 >
-                  {renderedSlides.map((banner, idx) => {
-                    const url = banner.imageUrl.trim();
-                    const slideKey = banner._isLoopClone
-                      ? `pricing-loop-clone-${banner.id || url}`
-                      : banner.id || `${url}-${idx}`;
-                    const altText =
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt={altText}
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority={idx === 0 ? "high" : "auto"}
+                    style={{ objectPosition: objectPosition || "center right" }}
+                    onError={
                       banner._isLoopClone
-                        ? ""
-                        : banner.altText ||
-                          banner.label ||
-                          `Pricing Hero Banner ${idx + 1}`;
-                    const objectPosition =
-                      banner.objectPosition ||
-                      banner.heroBannerObjectPosition ||
-                      "center";
-
-                    return (
-                      <div
-                        key={slideKey}
-                        className="relative w-full h-full min-w-full shrink-0 grow-0 basis-full overflow-hidden rounded-[4px] bg-[#080808]"
-                        aria-hidden={
-                          idx !== activeIndicatorIndex || Boolean(banner._isLoopClone)
-                        }
-                      >
-                        <img
-                          src={url}
-                          alt={altText}
-                          loading="eager"
-                          decoding="async"
-                          fetchPriority={idx === 0 ? "high" : "auto"}
-                          style={{ objectPosition }}
-                          onError={
-                            banner._isLoopClone
-                              ? undefined
-                              : () => handleBannerError(banner.id || url)
-                          }
-                          className="w-full h-full object-cover rounded-[4px] select-none pointer-events-none transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                        />
-                      </div>
-                    );
-                  })}
+                        ? undefined
+                        : () => handleBannerError(banner.id || url)
+                    }
+                    className="w-full h-full object-cover select-none pointer-events-none"
+                  />
                 </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* Fallback Studio Motif Background when no banners are loaded */
+          <div
+            data-testid="pricing-hero-fallback-container"
+            className="w-full h-full bg-[#080808] relative overflow-hidden"
+          >
+            <div
+              className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_30%,rgba(239,68,68,0.18),transparent_60%),radial-gradient(ellipse_at_20%_80%,rgba(34,197,94,0.12),transparent_55%)] pointer-events-none"
+              aria-hidden="true"
+            />
+          </div>
+        )}
 
-                {/* Subtle left-edge feather into #080808 */}
-                <div
-                  className="absolute inset-y-0 left-0 w-8 sm:w-12 pointer-events-none z-10"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, rgba(8,8,8,0.85) 0%, rgba(8,8,8,0.3) 50%, rgba(8,8,8,0) 100%)",
-                  }}
-                  aria-hidden="true"
+        {/* Subtle, smooth photographic dark scrim overlay (matching Blog Hero):
+            Desktop/tablet horizontal scrim keeps text contrast sharp on the left while leaving the studio workspace clearly visible on the right */}
+        <div
+          className="absolute inset-0 pointer-events-none hidden sm:block"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(8,8,8,0.92) 0%, rgba(8,8,8,0.78) 38%, rgba(8,8,8,0.38) 70%, rgba(8,8,8,0.16) 100%)",
+          }}
+          aria-hidden="true"
+        />
+
+        {/* Mobile vertical scrim for stacked layout */}
+        <div
+          className="absolute inset-0 pointer-events-none sm:hidden"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(8,8,8,0.92) 0%, rgba(8,8,8,0.80) 60%, rgba(8,8,8,0.48) 100%)",
+          }}
+          aria-hidden="true"
+        />
+
+        {/* Carousel Indicators (shown when > 1 active banner) */}
+        {activeBanners.length > 1 && (
+          <div
+            className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-8 z-20 flex items-center gap-1.5 bg-black/70 backdrop-blur-md border border-white/15 rounded-full px-2.5 py-1.5 shadow-lg"
+            role="tablist"
+            aria-label="Pricing hero banner slides"
+          >
+            {activeBanners.map((banner, idx) => {
+              const isCurrent = activeIndicatorIndex === idx;
+              return (
+                <button
+                  key={banner.id || idx}
+                  type="button"
+                  role="tab"
+                  aria-selected={isCurrent}
+                  aria-label={`Slide ${idx + 1} of ${activeBanners.length}: ${
+                    banner.label || `Banner ${idx + 1}`
+                  }`}
+                  onClick={() => handleSelectBanner(idx)}
+                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    isCurrent
+                      ? "w-5 bg-brand-red"
+                      : "w-1.5 bg-white/40 hover:bg-white/70"
+                  }`}
                 />
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-                {/* Studio Suite Badge Overlay */}
-                <div
-                  className="absolute top-3.5 right-3.5 z-20 flex items-center gap-2 bg-black/80 border border-white/15 rounded-[4px] px-2.5 py-1 backdrop-blur-md pointer-events-none"
+      {/* Foreground Content: Text directly over the image on the left */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-0">
+        <div className="max-w-xl lg:max-w-2xl xl:max-w-[680px]">
+          {/* Eyebrow Label */}
+          {eyebrow && (
+            <motion.div
+              className="flex items-center gap-2.5 mb-3 sm:mb-4"
+              initial={prefersReducedMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <span
+                className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0"
+                aria-hidden="true"
+              />
+              <span className="text-[11px] sm:text-xs font-mono font-bold uppercase tracking-[0.22em] text-neutral-300">
+                {eyebrow}
+              </span>
+            </motion.div>
+          )}
+
+          {/* Display Headline */}
+          <h1 className="font-display text-3xl sm:text-5xl md:text-5xl lg:text-[48px] xl:text-[54px] font-extrabold uppercase leading-[1.06] tracking-[-0.035em] text-white mb-4 sm:mb-6">
+            {line1 && (
+              <motion.span
+                className="block"
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
+              >
+                {line1}
+              </motion.span>
+            )}
+            {(line2 || highlight) && (
+              <motion.span
+                className="block mt-1 sm:mt-1.5"
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.18 }}
+              >
+                {line2 ? `${line2} ` : ""}
+                {highlight ? (
+                  <span className={getHighlightClass()}>{highlight}</span>
+                ) : null}
+              </motion.span>
+            )}
+          </h1>
+
+          {/* Subheading / Description */}
+          {description && (
+            <motion.p
+              className="text-neutral-300 text-xs sm:text-sm lg:text-base leading-relaxed mb-7 sm:mb-8 max-w-lg font-normal"
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: "easeOut", delay: 0.32 }}
+            >
+              {description}
+            </motion.p>
+          )}
+
+          {/* Action CTAs */}
+          <motion.div
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4"
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: "easeOut", delay: 0.44 }}
+          >
+            {primaryCtaText && (
+              <Link
+                href={primaryCtaLink}
+                className="inline-flex items-center justify-center gap-2.5 bg-brand-red text-white text-xs font-bold uppercase tracking-[0.16em] font-display px-6 sm:px-7 py-3.5 sm:py-4 rounded-none border border-brand-red hover:bg-[#dc2626] transition-all duration-150 no-underline cursor-pointer shadow-[0_4px_20px_rgba(239,68,68,0.25)] hover:shadow-[0_4px_25px_rgba(239,68,68,0.4)] active:scale-95"
+              >
+                <span>{primaryCtaText}</span>
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="translate-y-[-0.5px]"
                   aria-hidden="true"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse" />
-                  <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-neutral-300">
-                    DT+ PRODUCTION WORKSTATION
-                  </span>
-                </div>
-
-                {/* Carousel Indicators (shown when > 1 active banner) */}
-                {activeBanners.length > 1 && (
-                  <div
-                    className="absolute bottom-3.5 right-3.5 sm:bottom-4 sm:right-4 z-20 flex items-center gap-1.5 bg-black/80 backdrop-blur-md border border-white/15 rounded-full px-2.5 py-1.5 shadow-lg"
-                    role="tablist"
-                    aria-label="Pricing hero banner slides"
-                  >
-                    {activeBanners.map((banner, idx) => {
-                      const isCurrent = activeIndicatorIndex === idx;
-                      return (
-                        <button
-                          key={banner.id || idx}
-                          type="button"
-                          role="tab"
-                          aria-selected={isCurrent}
-                          aria-label={`Slide ${idx + 1} of ${activeBanners.length}: ${
-                            banner.label || `Banner ${idx + 1}`
-                          }`}
-                          onClick={() => handleSelectBanner(idx)}
-                          className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                            isCurrent
-                              ? "w-5 bg-brand-red"
-                              : "w-1.5 bg-white/40 hover:bg-white/70"
-                          }`}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* Fallback: Cinematic Studio Workstation Aesthetic */
-              <div
-                data-testid="pricing-hero-fallback-container"
-                className="relative w-full aspect-[16/10] sm:aspect-[1.7/1] lg:aspect-[1.65/1] xl:aspect-[1.68/1] min-h-[240px] sm:min-h-[280px] lg:min-h-[360px] xl:min-h-[400px] max-h-[380px] sm:max-h-[440px] lg:max-h-[460px] xl:max-h-[500px] 2xl:max-h-[540px] bg-[#090909] rounded-[4px] border border-white/10 overflow-hidden flex flex-col justify-between p-6 sm:p-8 select-none shadow-[0_20px_50px_rgba(0,0,0,0.65)]"
-              >
-                {/* Background ambient lighting */}
-                <div
-                  className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_30%,rgba(239,68,68,0.14),transparent_60%),radial-gradient(ellipse_at_20%_80%,rgba(34,197,94,0.08),transparent_55%)] pointer-events-none"
-                  aria-hidden="true"
-                />
-
-                {/* Top header bar */}
-                <div className="relative z-10 flex items-center justify-between border-b border-white/[0.08] pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-                    <span className="text-[10px] font-mono text-neutral-400 ml-2 tracking-wider">
-                      PRO_PROJECT_TIMELINE.PRPROJ
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest hidden sm:inline-block">
-                    REC ● 23.976 FPS
-                  </span>
-                </div>
-
-                {/* Center Visual Motif */}
-                <div className="relative z-10 flex flex-col items-center justify-center my-auto py-6 sm:py-8 text-center">
-                  <div className="w-16 h-16 rounded-full bg-brand-red/10 border border-brand-red/30 flex items-center justify-center text-brand-red mb-3 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
-                    <MonitorPlay className="w-8 h-8" strokeWidth={1.5} />
-                  </div>
-                  <h3 className="text-sm sm:text-base font-display font-extrabold uppercase tracking-wider text-white">
-                    Premium Post-Production Studio
-                  </h3>
-                  <p className="text-[11px] font-mono text-neutral-400 mt-1 max-w-sm">
-                    Custom motion graphics, sound design, and color grading calibrated for high retention.
-                  </p>
-                </div>
-
-                {/* Bottom Timeline Strip */}
-                <div className="relative z-10 flex items-center justify-between pt-3 border-t border-white/[0.08]">
-                  <div className="flex items-center gap-3 text-[10px] font-mono text-neutral-400">
-                    <span className="flex items-center gap-1">
-                      <SlidersHorizontal className="w-3 h-3 text-brand-red" /> 10-BIT LOG
-                    </span>
-                    <span className="hidden sm:inline">|</span>
-                    <span className="hidden sm:inline">4K PRORES 422 HQ</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-brand-green font-bold uppercase tracking-wider">
-                    ● READY TO PRODUCE
-                  </span>
-                </div>
-              </div>
+                  <path
+                    d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="square"
+                    strokeLinejoin="miter"
+                  />
+                </svg>
+              </Link>
             )}
-          </div>
+
+            {secondaryCtaText && (
+              <Link
+                href={secondaryCtaLink}
+                className="inline-flex items-center justify-center gap-2.5 border border-white/20 hover:border-white hover:bg-white hover:text-black text-white text-xs font-bold uppercase tracking-[0.16em] font-display px-6 sm:px-7 py-3.5 sm:py-4 rounded-none transition-colors duration-150 no-underline cursor-pointer active:scale-95"
+              >
+                <span>{secondaryCtaText}</span>
+              </Link>
+            )}
+          </motion.div>
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPortfolioItem } from "@/lib/api";
+import { getPortfolio, getPortfolioItem } from "@/lib/api";
 import ShareButton from "@/components/portfolio/ShareButton";
 import ProjectEnquiryModal from "@/components/portfolio/ProjectEnquiryModal";
 import ThumbnailDownloadButton from "@/components/portfolio/ThumbnailDownloadButton";
@@ -12,468 +12,171 @@ function getEmbedUrl(url) {
   try {
     const parsed = new URL(url);
     if (parsed.hostname.includes("youtube.com")) {
-      const v = parsed.searchParams.get("v");
-      if (v) return `https://www.youtube-nocookie.com/embed/${v}`;
-      if (parsed.pathname.startsWith("/embed/")) return url;
-      if (parsed.pathname.startsWith("/shorts/")) {
-        const id = parsed.pathname.split("/")[2];
-        if (id) return `https://www.youtube-nocookie.com/embed/${id}`;
-      }
+      const id = parsed.searchParams.get("v") || parsed.pathname.split("/").filter(Boolean).at(-1);
+      if (id) return `https://www.youtube-nocookie.com/embed/${id}`;
     }
     if (parsed.hostname.includes("youtu.be")) {
       const id = parsed.pathname.replace(/^\//, "");
       if (id) return `https://www.youtube-nocookie.com/embed/${id}`;
     }
     if (parsed.hostname.includes("vimeo.com")) {
-      const parts = parsed.pathname.split("/").filter(Boolean);
-      const id = parts[parts.length - 1];
-      if (id && /^\d+$/.test(id)) {
-        return `https://player.vimeo.com/video/${id}`;
-      }
+      const id = parsed.pathname.split("/").filter(Boolean).at(-1);
+      if (id && /^\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`;
     }
-  } catch (_) {
+  } catch {
     return null;
   }
   return null;
 }
 
-function getDetailAspectClass(ratio) {
-  if (ratio === "9:16" || ratio === "RATIO_9_16") return "aspect-[9/16] max-w-sm sm:max-w-md mx-auto";
-  if (ratio === "1:1" || ratio === "RATIO_1_1") return "aspect-square max-w-xl mx-auto";
-  if (ratio === "4:5" || ratio === "RATIO_4_5") return "aspect-[4/5] max-w-lg mx-auto";
-  return "aspect-[16/9] w-full";
+function formatRatio(ratio) {
+  return ({ RATIO_9_16: "9:16", RATIO_1_1: "1:1", RATIO_4_5: "4:5", RATIO_16_9: "16:9", AUTO: "Original" })[ratio] || ratio || "Not specified";
 }
 
-function getFormatDescription(ratio) {
-  if (ratio === "9:16" || ratio === "RATIO_9_16") return "9:16 (Vertical Reel / Shorts)";
-  if (ratio === "1:1" || ratio === "RATIO_1_1") return "1:1 (Square Social Feed)";
-  if (ratio === "4:5" || ratio === "RATIO_4_5") return "4:5 (Portrait Feed Video)";
-  if (ratio === "16:9" || ratio === "RATIO_16_9") return "16:9 (Landscape Widescreen)";
-  if (ratio === "AUTO") return "Auto Detect / Original Ratio";
-  return ratio || "16:9 Standard";
+function formatDate(date) {
+  if (!date) return "Not specified";
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime()) ? "Not specified" : new Intl.DateTimeFormat("en", { year: "numeric", month: "short", day: "numeric" }).format(parsed);
+}
+
+function projectPath(project) {
+  return `/portfolio/${project.slug || project.id}`;
+}
+
+function ProjectCard({ project }) {
+  const image = project.thumbnailUrl || project.imageUrl;
+  return (
+    <Link href={projectPath(project)} className="group min-w-0 overflow-hidden border border-white/10 bg-[#101010] transition-colors hover:border-brand-red">
+      <div className="aspect-video overflow-hidden bg-black">
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt={project.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        ) : (
+          <div className="flex h-full items-center justify-center text-xs uppercase tracking-widest text-neutral-600">Project preview</div>
+        )}
+      </div>
+      <div className="p-4">
+        <p className="mb-2 text-[10px] font-mono uppercase tracking-[0.16em] text-brand-red">{project.categoryName || project.subCategory || "DesignTouch+ Project"}</p>
+        <h3 className="line-clamp-2 text-base font-bold text-white transition-colors group-hover:text-brand-red">{project.title}</h3>
+      </div>
+    </Link>
+  );
 }
 
 export async function generateMetadata({ params }) {
   const project = await getPortfolioItem(params.slug).catch(() => null);
-  if (!project) {
-    return {
-      title: "Project Details | DesignTouch+ Portfolio",
-      description: "Explore our curated portfolio of commercial campaigns and visual narratives.",
-    };
-  }
-
   return {
-    title: `${project.title} | DesignTouch+ Portfolio`,
-    description:
-      project.description ||
-      `Explore ${project.title} by DesignTouch+. High-converting visual narratives and commercial edits.`,
+    title: project ? `${project.title} | Portfolio` : "Project Details | Portfolio",
+    description: project?.description || "Explore our portfolio of video editing and visual design projects.",
   };
 }
 
 export default async function PortfolioDetailPage({ params }) {
   const project = await getPortfolioItem(params.slug).catch(() => null);
-
-  if (!project) {
-    notFound();
-  }
+  if (!project) notFound();
 
   const isVideo = project.contentType === "VIDEO_EDITING";
+  const contentType = project.contentType || "VIDEO_EDITING";
+  const [sameTypeItems, videoItems, thumbnailItems] = await Promise.all([
+    getPortfolio(contentType).catch(() => []),
+    getPortfolio("VIDEO_EDITING").catch(() => []),
+    getPortfolio("THUMBNAIL_DESIGN").catch(() => []),
+  ]);
+  const currentItems = (sameTypeItems || []).length ? sameTypeItems : [project];
+  const currentIndex = currentItems.findIndex((item) => item.id === project.id || item.slug === project.slug);
+  const nextProject = currentIndex >= 0 && currentItems.length > 1 ? currentItems[(currentIndex + 1) % currentItems.length] : null;
+  const previousProject = currentIndex > 0 ? currentItems[currentIndex - 1] : null;
+  const relatedProjects = [...(videoItems || []), ...(thumbnailItems || [])]
+    .filter((item, index, items) => (item.id !== project.id && item.slug !== project.slug) && items.findIndex((candidate) => candidate.id === item.id) === index)
+    .sort((a, b) => {
+      const aMatch = a.categoryId && a.categoryId === project.categoryId ? 1 : 0;
+      const bMatch = b.categoryId && b.categoryId === project.categoryId ? 1 : 0;
+      return bMatch - aMatch || (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+    })
+    .slice(0, 3);
+  const posterSrc = project.thumbnailUrl || project.imageUrl || null;
   const embedUrl = !project.videoUrl && project.liveVideoUrl ? getEmbedUrl(project.liveVideoUrl) : null;
-  const posterSrc = project.imageUrl || project.thumbnailUrl || null;
-  const categoryLabel = project.categoryName || project.subCategory || project.category || (isVideo ? "Video Editing" : "Thumbnail Design");
+  const category = project.categoryName || project.subCategory || project.category || (isVideo ? "Video Editing" : "Thumbnail Design");
+  const services = [...new Set([isVideo ? "Video Editing" : "Thumbnail Design", project.categoryName, project.subCategory].filter(Boolean))];
 
   return (
-    <main className="bg-[#080808] text-white min-h-screen pb-20 selection:bg-brand-red selection:text-white">
-      {/* Top Breadcrumb & Navigation Bar */}
-      <div className="border-b border-white/[0.08] bg-[#0c0c0c]/80 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
-          <Link
-            href="/portfolio"
-            className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors no-underline shrink-0 group"
-          >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="group-hover:-translate-x-0.5 transition-transform"
-            >
-              <path d="M10 6H2M2 6L6 2M2 6L6 10" />
-            </svg>
-            <span>Back to Portfolio</span>
-          </Link>
-
-          <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-neutral-500 truncate">
-            <span>PORTFOLIO</span>
-            <span>//</span>
-            <span className="text-neutral-400 truncate">{categoryLabel}</span>
-            <span>//</span>
-            <span className="text-brand-red truncate">{project.title}</span>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="w-1.5 h-1.5 bg-brand-red inline-block" />
-            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
-              {isVideo ? "4K MASTER ARCHIVE" : "HIGH-CTR PACKAGING"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
-        {/* Project Header */}
-        <div className="mb-8 sm:mb-12">
-          <div className="flex flex-wrap items-center gap-2.5 mb-4">
-            <span className="inline-flex items-center gap-1.5 bg-brand-red text-white px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-[0.16em]">
-              <span className="w-1.5 h-1.5 bg-white rounded-none" />
-              {isVideo ? "Video Editing" : "Thumbnail Design"}
-            </span>
-            <span className="inline-flex items-center bg-white/[0.05] border border-white/10 text-neutral-300 px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-[0.16em]">
-              {categoryLabel}
-            </span>
-            {project.duration && (
-              <span className="inline-flex items-center bg-white/[0.05] border border-white/10 text-neutral-400 px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest">
-                RUNTIME: {project.duration}
-              </span>
-            )}
-            {isVideo && project.videoAspectRatio && project.videoAspectRatio !== "AUTO" && (
-              <span className="inline-flex items-center bg-white/[0.05] border border-white/10 text-neutral-300 px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-[0.16em]">
-                FORMAT: {project.videoAspectRatio}
-              </span>
-            )}
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold uppercase tracking-tight font-display text-white mb-4 leading-none">
-            {project.title}
-          </h1>
-
-          {project.subCategory && project.subCategory !== categoryLabel && (
-            <div className="text-xs sm:text-sm font-mono text-neutral-400 uppercase tracking-widest mb-3">
-              SPECIFICATION // {project.subCategory}
-            </div>
-          )}
+    <main className="min-h-screen overflow-x-hidden bg-[#080808] pb-20 text-white selection:bg-brand-red selection:text-white">
+      <div className="global-container pt-5 sm:pt-8">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+          <Link href="/portfolio" className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400 transition-colors hover:text-white">← Back to Portfolio</Link>
+          <div className="hidden min-w-0 truncate text-[10px] font-mono uppercase tracking-widest text-neutral-500 sm:block">Portfolio <span className="px-2 text-neutral-700">/</span>{category}<span className="px-2 text-neutral-700">/</span><span className="text-brand-red">{project.title}</span></div>
+          <ShareButton title={project.title} />
         </div>
 
-        {/* Media Frame with Dynamic Format Sizing */}
-        <div className="mb-8 flex justify-center">
-          <div
-            className={`relative ${getDetailAspectClass(
-              project.videoAspectRatio
-            )} bg-black border border-white/15 overflow-hidden shadow-2xl w-full`}
-          >
-            {project.videoUrl ? (
-              <video
-                src={project.videoUrl}
-                poster={posterSrc || undefined}
-                controls
-                playsInline
-                className="w-full h-full object-contain bg-black"
-              />
-            ) : embedUrl ? (
-              <iframe
-                src={embedUrl}
-                title={project.title}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : posterSrc ? (
-              <div className="w-full h-full relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={posterSrc}
-                  alt={project.title}
-                  className="w-full h-full object-contain bg-black"
-                />
-              </div>
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-[#111]">
-                <span className="text-xs font-mono uppercase tracking-[0.2em] text-neutral-500 mb-2">
-                  [PROJECT MEDIA ARCHIVED]
-                </span>
-                <span className="text-sm font-display uppercase font-bold text-neutral-400">
-                  {project.title}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Action Buttons Row — Only render available links, no empty buttons */}
-        <div className="p-4 sm:p-6 bg-[#0e0e0e] border border-white/10 rounded-none mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            {isVideo ? (
-              <>
-                {/* WATCH LIVE (Only if liveVideoUrl exists) */}
-                {project.liveVideoUrl && (
-                  <a
-                    href={project.liveVideoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-[0.16em] border border-brand-red rounded-none transition-colors no-underline select-none"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                      <path d="M3 2L10 6L3 10V2Z" />
-                    </svg>
-                    <span>Watch Live</span>
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 9L9 3M9 3H4M9 3V8" />
-                    </svg>
-                  </a>
-                )}
-
-                {/* GOOGLE DRIVE (Only if googleDriveUrl exists) */}
-                {project.googleDriveUrl && (
-                  <a
-                    href={project.googleDriveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/[0.06] hover:bg-white/[0.12] text-white text-xs font-mono font-bold uppercase tracking-[0.16em] border border-white/20 hover:border-white/40 rounded-none transition-colors no-underline select-none"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    <span>Google Drive</span>
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 9L9 3M9 3H4M9 3V8" />
-                    </svg>
-                  </a>
-                )}
-
-                {/* Commission CTA */}
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-transparent hover:bg-white/[0.04] text-neutral-300 hover:text-white text-xs font-mono font-bold uppercase tracking-[0.16em] border border-white/15 hover:border-white/30 rounded-none transition-colors no-underline select-none"
-                >
-                  <span>Commission an Edit</span>
-                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" />
-                  </svg>
-                </Link>
-              </>
-            ) : (
-              <>
-                {/* DOWNLOAD IMAGE for Thumbnail Design */}
-                <ThumbnailDownloadButton project={project} />
-
-                {/* OPEN GOOGLE DRIVE (Only if googleDriveUrl exists) */}
-                {project.googleDriveUrl && (
-                  <a
-                    href={project.googleDriveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/[0.06] hover:bg-white/[0.12] text-white text-xs font-mono font-bold uppercase tracking-[0.16em] border border-white/20 hover:border-white/40 rounded-none transition-colors no-underline select-none"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    <span>Open Google Drive</span>
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 9L9 3M9 3H4M9 3V8" />
-                    </svg>
-                  </a>
-                )}
-
-                {/* ORDER THUMBNAILS CTA */}
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-transparent hover:bg-white/[0.04] text-neutral-300 hover:text-white text-xs font-mono font-bold uppercase tracking-[0.16em] border border-white/15 hover:border-white/30 rounded-none transition-colors no-underline select-none"
-                >
-                  <span>Order Thumbnails</span>
-                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" />
-                  </svg>
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Share Action */}
-          <div className="shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/[0.06]">
-            <ShareButton title={project.title} />
-          </div>
-        </div>
-
-        {/* Content Layout: 2 Columns (Scope / Narrative + Project Spec Table) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-          {/* Main Description */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="p-6 sm:p-8 bg-[#0c0c0c] border border-white/10 rounded-none">
-              <div className="flex items-center justify-between pb-3 mb-6 border-b border-white/[0.08]">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-[0.18em] text-neutral-300">
-                  01 // Project Scope &amp; Creative Overview
-                </span>
-                <span className="text-[10px] font-mono text-neutral-500">SUMMARY</span>
-              </div>
-
-              {project.description ? (
-                <div className="text-neutral-300 text-sm sm:text-base leading-relaxed space-y-4 font-normal">
-                  {project.description.split(/\n+/).map((para, i) => (
-                    <p key={i}>{para}</p>
-                  ))}
-                </div>
+        <section className="grid min-w-0 grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.8fr)] lg:gap-12 xl:gap-16">
+          <div className="min-w-0">
+            <div className="relative aspect-video w-full overflow-hidden border border-white/10 bg-black shadow-2xl">
+              {project.videoUrl ? (
+                <video src={project.videoUrl} poster={posterSrc || undefined} controls playsInline preload="metadata" className="h-full w-full bg-black object-contain" aria-label={`${project.title} video`} />
+              ) : embedUrl ? (
+                <iframe src={embedUrl} title={project.title} className="h-full w-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowFullScreen />
+              ) : posterSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={posterSrc} alt={project.title} className="h-full w-full object-contain" />
               ) : (
-                <p className="text-neutral-500 text-sm font-mono uppercase tracking-wider">
-                  No extended creative brief archived for this release.
-                </p>
+                <div className="flex h-full items-center justify-center text-xs font-mono uppercase tracking-widest text-neutral-500">Project media unavailable</div>
               )}
             </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-[10px] font-mono uppercase tracking-[0.15em] text-neutral-500">
+              <span>{isVideo ? "Project film" : "Project artwork"}</span>
+              <span>{formatRatio(project.videoAspectRatio)}</span>
+            </div>
+          </div>
 
-            {/* Additional Resource Links Section (Only rendered if items exist) */}
-            {project.resourceLinks && project.resourceLinks.length > 0 && (
-              <div className="p-6 sm:p-8 bg-[#0c0c0c] border border-white/10 rounded-none">
-                <div className="flex items-center justify-between pb-3 mb-6 border-b border-white/[0.08]">
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-[0.18em] text-neutral-300">
-                    02 // Additional Resources &amp; Client Deliverables
-                  </span>
-                  <span className="text-[10px] font-mono text-brand-red font-bold">
-                    {project.resourceLinks.length} {project.resourceLinks.length === 1 ? "LINK" : "LINKS"}
-                  </span>
-                </div>
+          <div className="flex min-w-0 flex-col lg:pt-1">
+            <span className="mb-4 inline-flex w-fit items-center gap-2 bg-brand-red px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-[0.16em]">{category}</span>
+            <h1 className="mb-5 break-words font-display text-3xl font-extrabold uppercase leading-[0.98] tracking-tight sm:text-4xl xl:text-5xl">{project.title}</h1>
+            {project.description && <p className="mb-7 whitespace-pre-line text-sm leading-relaxed text-neutral-300 sm:text-base">{project.description}</p>}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {project.resourceLinks.map((link, idx) => (
-                    <a
-                      key={idx}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-4 bg-black/60 hover:bg-black/90 border border-white/10 hover:border-brand-red transition-all group no-underline block"
-                    >
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-white group-hover:text-brand-red transition-colors">
-                          {link.title}
-                        </span>
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 12 12"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          className="text-neutral-500 group-hover:text-brand-red transition-colors shrink-0 mt-0.5"
-                        >
-                          <path d="M3 9L9 3M9 3H4M9 3V8" />
-                        </svg>
-                      </div>
+            <dl className="mb-7 grid grid-cols-2 gap-x-5 border-y border-white/10 py-5">
+              <div className="border-b border-white/[0.06] py-3"><dt className="mb-1 text-[10px] font-mono uppercase tracking-widest text-neutral-500">Duration</dt><dd className="text-sm text-white">{project.duration || "Not specified"}</dd></div>
+              <div className="border-b border-white/[0.06] py-3"><dt className="mb-1 text-[10px] font-mono uppercase tracking-widest text-neutral-500">Aspect ratio</dt><dd className="text-sm text-white">{formatRatio(project.videoAspectRatio)}</dd></div>
+              <div className="py-3"><dt className="mb-1 text-[10px] font-mono uppercase tracking-widest text-neutral-500">Published</dt><dd className="text-sm text-white">{formatDate(project.createdAt)}</dd></div>
+              <div className="py-3"><dt className="mb-1 text-[10px] font-mono uppercase tracking-widest text-neutral-500">Project type</dt><dd className="text-sm text-white">{isVideo ? "Video Editing" : "Thumbnail Design"}</dd></div>
+            </dl>
 
-                      {link.description && (
-                        <p className="text-neutral-400 text-xs leading-normal line-clamp-2 mb-3">
-                          {link.description}
-                        </p>
-                      )}
-
-                      <div className="text-[10px] font-mono text-neutral-500 group-hover:text-neutral-300 truncate">
-                        {link.url}
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
+            {nextProject ? (
+              <Link href={projectPath(nextProject)} className="inline-flex min-h-12 items-center justify-between gap-4 bg-brand-red px-5 py-4 text-xs font-mono font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-red-600">View Next Project <span aria-hidden="true">↗</span></Link>
+            ) : (
+              <Link href="/portfolio" className="inline-flex min-h-12 items-center justify-between gap-4 bg-brand-red px-5 py-4 text-xs font-mono font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-red-600">View All Projects <span aria-hidden="true">↗</span></Link>
             )}
-          </div>
-
-          {/* Sidebar Specifications */}
-          <div className="space-y-6">
-            <div className="p-6 bg-[#0c0c0c] border border-white/10 rounded-none space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-[0.18em] text-neutral-300">
-                  TECHNICAL SPECS
-                </span>
-                <span className="text-[10px] font-mono text-neutral-500">METRICS</span>
-              </div>
-
-              <div className="space-y-3.5 text-xs font-mono">
-                <div className="flex items-center justify-between pb-2 border-b border-white/[0.05]">
-                  <span className="text-neutral-500 uppercase">Content Type</span>
-                  <span className="text-white uppercase font-bold">
-                    {isVideo ? "Video Editing" : "Thumbnail Design"}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between pb-2 border-b border-white/[0.05]">
-                  <span className="text-neutral-500 uppercase">Category</span>
-                  <span className="text-brand-red uppercase font-bold">
-                    {categoryLabel}
-                  </span>
-                </div>
-
-                {project.subCategory && (
-                  <div className="flex items-center justify-between pb-2 border-b border-white/[0.05]">
-                    <span className="text-neutral-500 uppercase">Tag / Sub</span>
-                    <span className="text-neutral-300 uppercase">{project.subCategory}</span>
-                  </div>
-                )}
-
-                {isVideo && (
-                  <div className="flex items-center justify-between pb-2 border-b border-white/[0.05]">
-                    <span className="text-neutral-500 uppercase">Duration</span>
-                    <span className="text-white">{project.duration || "N/A"}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pb-2 border-b border-white/[0.05]">
-                  <span className="text-neutral-500 uppercase">Aspect Ratio</span>
-                  <span className="text-neutral-200">
-                    {isVideo ? getFormatDescription(project.videoAspectRatio) : "16:9 Standard"}
-                  </span>
-                </div>
-
-                {project.googleDriveUrl && (
-                  <div className="flex items-center justify-between pb-2 border-b border-white/[0.05]">
-                    <span className="text-neutral-500 uppercase">Google Drive</span>
-                    <a
-                      href={project.googleDriveUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-white hover:text-brand-red font-bold uppercase inline-flex items-center gap-1 transition-colors no-underline"
-                    >
-                      <span>Linked</span>
-                      <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 9L9 3M9 3H4M9 3V8" />
-                      </svg>
-                    </a>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-500 uppercase">Master Archive</span>
-                  <span className="text-emerald-400 font-bold uppercase">● Secured</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Contact Card */}
-            <div className="p-6 bg-brand-red/10 border border-brand-red/30 rounded-none space-y-3">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-brand-red block">
-                COMMISSION WORK
-              </span>
-              <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                Need edits or packaging calibrated with this exact level of conversion and visual pacing?
-              </p>
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-white hover:underline pt-1 no-underline"
-              >
-                <span>Inquire With Our Studio</span>
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5" />
-                </svg>
-              </Link>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {previousProject && <Link href={projectPath(previousProject)} className="border border-white/15 px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-300 transition-colors hover:border-white/40 hover:text-white">← Previous project</Link>}
+              {project.liveVideoUrl && <a href={project.liveVideoUrl} target="_blank" rel="noopener noreferrer" className="border border-white/15 px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-300 transition-colors hover:border-white/40 hover:text-white">Watch live ↗</a>}
+              {!isVideo && <ThumbnailDownloadButton project={project} />}
+              {project.googleDriveUrl && <a href={project.googleDriveUrl} target="_blank" rel="noopener noreferrer" className="border border-white/15 px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-300 transition-colors hover:border-white/40 hover:text-white">Project files ↗</a>}
             </div>
           </div>
-        </div>
+        </section>
+
+        <section className="mt-16 grid min-w-0 grid-cols-1 gap-8 border-t border-white/10 pt-10 md:grid-cols-[minmax(0,1.5fr)_minmax(240px,0.7fr)] lg:mt-24 lg:gap-16">
+          <div className="min-w-0">
+            <p className="mb-3 text-[10px] font-mono uppercase tracking-[0.2em] text-brand-red">Project overview</p>
+            <h2 className="mb-5 font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">The creative brief</h2>
+            {project.description ? <p className="whitespace-pre-line text-sm leading-7 text-neutral-300 sm:text-base">{project.description}</p> : <p className="text-sm leading-7 text-neutral-500">No additional project description is available.</p>}
+            {project.resourceLinks?.length > 0 && <div className="mt-6 flex flex-wrap gap-3">{project.resourceLinks.map((resource, index) => <a key={`${resource.url}-${index}`} href={resource.url} target="_blank" rel="noopener noreferrer" className="border border-white/15 px-4 py-3 text-xs text-neutral-300 transition-colors hover:border-brand-red hover:text-white">{resource.title || "Project resource"} ↗</a>)}</div>}
+          </div>
+          <aside className="min-w-0 border-t border-white/10 pt-6 md:border-l md:border-t-0 md:pl-8 md:pt-0">
+            <p className="mb-3 text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500">Services used</p>
+            <h2 className="mb-5 font-display text-xl font-bold uppercase">Project services</h2>
+            <ul className="space-y-3">{services.map((service) => <li key={service} className="flex items-center gap-3 border-b border-white/[0.07] pb-3 text-sm text-neutral-200"><span className="h-1.5 w-1.5 shrink-0 bg-brand-red" />{service}</li>)}</ul>
+          </aside>
+        </section>
+
+        <section className="mt-16 border-t border-white/10 pt-10 lg:mt-24">
+          <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+            <div><p className="mb-2 text-[10px] font-mono uppercase tracking-[0.2em] text-brand-red">Selected work</p><h2 className="font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">More projects</h2></div>
+            <Link href="/portfolio" className="text-xs font-mono font-bold uppercase tracking-widest text-neutral-300 transition-colors hover:text-brand-red">View all projects ↗</Link>
+          </div>
+          {relatedProjects.length ? <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">{relatedProjects.map((item) => <ProjectCard key={item.id || item.slug} project={item} />)}</div> : <p className="text-sm text-neutral-500">More projects will appear here as they are published.</p>}
+        </section>
       </div>
-
-      {/* Service Enquiry Popup (appears after ~2s or on scroll; session-dismissible) */}
       <ProjectEnquiryModal project={project} />
     </main>
   );
 }
-

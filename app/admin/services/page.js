@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import Image from "next/image";
 import {
   Plus,
   Pencil,
@@ -20,6 +21,7 @@ import {
   Check,
   X as XIcon,
   Eye,
+  EyeOff,
   ArrowUp,
   ArrowDown,
   Clapperboard,
@@ -907,7 +909,7 @@ export default function AdminServicesPage({ defaultTab = "SERVICES" }) {
                         <td className="px-4 py-3">
                           <div className="inline-flex items-center gap-2.5">
                             <span
-                              className="w-8 h-8 rounded-[6px] bg-[#0a0a0a] border border-white/15 flex items-center justify-center shrink-0"
+                              className="w-8 h-8 rounded-none bg-[#0a0a0a] border border-white/15 flex items-center justify-center shrink-0"
                               style={{ color: rowTheme.hex }}
                             >
                               <ServiceOutlineIcon
@@ -922,7 +924,7 @@ export default function AdminServicesPage({ defaultTab = "SERVICES" }) {
                         </td>
                         <td className="px-4 py-3">
                           <span
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider border rounded-[4px]"
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider border rounded-none"
                             style={{
                               color: rowTheme.hex,
                               borderColor: `${rowTheme.hex}35`,
@@ -931,7 +933,7 @@ export default function AdminServicesPage({ defaultTab = "SERVICES" }) {
                             title={`Theme: ${rowTheme.label}`}
                           >
                             <span
-                              className="w-2 h-2 rounded-full inline-block shrink-0"
+                              className="w-2 h-2 rounded-none inline-block shrink-0"
                               style={{ backgroundColor: rowTheme.hex }}
                             />
                             {rowTheme.label}
@@ -1151,9 +1153,12 @@ export default function AdminServicesPage({ defaultTab = "SERVICES" }) {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/[0.02] border border-white/10 p-3.5">
               <div className="w-32 aspect-[16/9] bg-[#141414] border border-white/15 overflow-hidden flex items-center justify-center shrink-0">
                 {pageContent.heroBannerImageUrl ? (
-                  <img
+                  <Image
                     src={pageContent.heroBannerImageUrl}
                     alt="Banner preview"
+                    width={128}
+                    height={72}
+                    unoptimized
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -1732,9 +1737,11 @@ export default function AdminServicesPage({ defaultTab = "SERVICES" }) {
                           <div className="lg:col-span-5">
                             <div className="relative aspect-[16/9] w-full bg-[#121212] border border-white/15 overflow-hidden flex items-center justify-center">
                               {banner.imageUrl ? (
-                                <img
+                                <Image
                                   src={banner.imageUrl}
                                   alt={`${bannerTitle} preview`}
+                                  fill
+                                  unoptimized
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
@@ -1971,12 +1978,13 @@ export default function AdminServicesPage({ defaultTab = "SERVICES" }) {
                           </td>
                           <td className="px-4 py-3">
                             <div className="inline-flex items-center gap-2.5">
-                              <span className="w-8 h-8 rounded-full bg-[#0b0b0b] border border-white/20 flex items-center justify-center shrink-0">
-                                <img
+                              <span className="w-8 h-8 rounded-none bg-[#0b0b0b] border border-white/20 flex items-center justify-center shrink-0">
+                                <Image
                                   src={stepIconMeta.src}
                                   alt={stepIconMeta.label}
                                   width={16}
                                   height={16}
+                                  unoptimized
                                   className="w-4 h-4 object-contain"
                                 />
                               </span>
@@ -2166,15 +2174,16 @@ export default function AdminServicesPage({ defaultTab = "SERVICES" }) {
                           <td className="px-4 py-3">
                             <div className="inline-flex items-center gap-2.5">
                               {toolIconMeta.hasIcon && toolIconMeta.src ? (
-                                <img
+                                <Image
                                   src={toolIconMeta.src}
                                   alt={tool.name}
                                   width={32}
                                   height={32}
+                                  unoptimized
                                   className="w-8 h-8 object-contain shrink-0"
                                 />
                               ) : (
-                                <span className="w-8 h-8 rounded-[7px] bg-[#141414] border border-white/15 flex items-center justify-center shrink-0 font-mono text-[11px] font-bold text-neutral-200">
+                                <span className="w-8 h-8 rounded-none bg-[#141414] border border-white/15 flex items-center justify-center shrink-0 font-mono text-[11px] font-bold text-neutral-200">
                                   {tool.iconKey || toolIconMeta.shortCode}
                                 </span>
                               )}

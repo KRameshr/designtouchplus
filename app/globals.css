@@ -2,6 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Clean browser autofill styling for dark inputs */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff;
+    -webkit-box-shadow: 0 0 0px 1000px #111111 inset;
+    transition: background-color 5000s ease-in-out 0s;
+    color-scheme: dark;
+  }
+}
+
+@layer components {
+  /* DesignTouch+ Global Container System
+     Desktop: max-width ~1440px, width calc(100% - 120px), margin-inline: auto
+     Tablet: width calc(100% - 64px), margin-inline: auto
+     Mobile: width calc(100% - 32px), margin-inline: auto
+  */
+  .global-container {
+    width: calc(100% - 32px);
+    max-width: 1440px;
+    margin-inline: auto;
+  }
+  @media (min-width: 640px) {
+    .global-container {
+      width: calc(100% - 64px);
+    }
+  }
+  @media (min-width: 1024px) {
+    .global-container {
+      width: calc(100% - 120px);
+    }
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -18,4 +57,27 @@ body {
 ::selection {
   background-color: #EF4444;
   color: #ffffff;
+}
+
+/* Viewport-fixed floating actions with safe-area inset support */
+.floating-action-chatbot {
+  bottom: max(1rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+  right: max(1rem, calc(1rem + env(safe-area-inset-right, 0px)));
+}
+@media (min-width: 640px) {
+  .floating-action-chatbot {
+    bottom: max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)));
+    right: max(1.5rem, calc(1.5rem + env(safe-area-inset-right, 0px)));
+  }
+}
+
+.floating-action-whatsapp {
+  bottom: max(74px, calc(74px + env(safe-area-inset-bottom, 0px)));
+  right: max(1rem, calc(1rem + env(safe-area-inset-right, 0px)));
+}
+@media (min-width: 640px) {
+  .floating-action-whatsapp {
+    bottom: max(94px, calc(94px + env(safe-area-inset-bottom, 0px)));
+    right: max(1.5rem, calc(1.5rem + env(safe-area-inset-right, 0px)));
+  }
 }

@@ -14,7 +14,7 @@ import {
 } from "@/lib/api";
 
 export const metadata = {
-  title: "Pricing | DesignTouch+",
+  title: "Pricing",
   description:
     "Simple, transparent pricing for video editing, motion graphics, and creative content services.",
 };

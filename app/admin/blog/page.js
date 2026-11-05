@@ -423,7 +423,7 @@ export default function AdminBlogPage() {
         {activeTab === "ARTICLES" && (
           <button
             onClick={() => setEditingPost({})}
-            className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-3 rounded-lg border-none cursor-pointer transition-colors shadow-[0_4px_15px_rgba(239,68,68,0.25)] self-start sm:self-auto"
+            className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-3 rounded-none border border-brand-red cursor-pointer transition-colors self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" /> New Article
           </button>
@@ -432,7 +432,7 @@ export default function AdminBlogPage() {
         {activeTab === "CATEGORIES" && (
           <button
             onClick={() => setEditingCategory({})}
-            className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-3 rounded-lg border-none cursor-pointer transition-colors shadow-[0_4px_15px_rgba(239,68,68,0.25)] self-start sm:self-auto"
+            className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-3 rounded-none border border-brand-red cursor-pointer transition-colors self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" /> New Category
           </button>
@@ -440,12 +440,12 @@ export default function AdminBlogPage() {
       </div>
 
       {/* Top Tab Switcher */}
-      <div className="flex items-center gap-2 border-b border-white/[0.08] pb-1">
+      <div className="flex items-center gap-2 border-b border-white/[0.08] pb-1 mb-6">
         <button
           onClick={() => setActiveTab("ARTICLES")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-mono font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-none text-xs font-mono font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
             activeTab === "ARTICLES"
-              ? "bg-brand-red/10 border-brand-red/40 text-brand-red font-bold"
+              ? "bg-brand-red text-white border-brand-red font-bold"
               : "bg-transparent border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.03]"
           }`}
         >
@@ -455,9 +455,9 @@ export default function AdminBlogPage() {
 
         <button
           onClick={() => setActiveTab("CATEGORIES")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-mono font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-none text-xs font-mono font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
             activeTab === "CATEGORIES"
-              ? "bg-brand-red/10 border-brand-red/40 text-brand-red font-bold"
+              ? "bg-brand-red text-white border-brand-red font-bold"
               : "bg-transparent border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.03]"
           }`}
         >
@@ -467,9 +467,9 @@ export default function AdminBlogPage() {
 
         <button
           onClick={() => setActiveTab("HERO")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-mono font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-none text-xs font-mono font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
             activeTab === "HERO"
-              ? "bg-brand-red/10 border-brand-red/40 text-brand-red font-bold"
+              ? "bg-brand-red text-white border-brand-red font-bold"
               : "bg-transparent border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.03]"
           }`}
         >
@@ -482,14 +482,14 @@ export default function AdminBlogPage() {
       {activeTab === "ARTICLES" && (
         <div className="space-y-4">
           {postsError && (
-            <div className="flex items-center gap-2 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg p-3.5">
+            <div className="flex items-center gap-2 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-none p-3.5">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{postsError}</span>
             </div>
           )}
 
           {/* Search Bar & Status Filter Pills */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#0d0d0d] border border-white/[0.08] p-3 rounded-xl">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#0d0d0d] border border-white/[0.08] p-3 rounded-none">
             {/* Search Input */}
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -498,7 +498,7 @@ export default function AdminBlogPage() {
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search articles by title, tags, keywords, excerpt, slug, or category..."
-                className="w-full bg-white/[0.03] border border-white/10 focus:border-brand-red rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder-neutral-500 outline-none transition-colors font-sans"
+                className="w-full bg-white/[0.03] border border-white/10 focus:border-brand-red rounded-none pl-9 pr-8 py-2 text-xs text-white placeholder-neutral-500 outline-none transition-colors font-sans"
               />
               {searchQuery && (
                 <button
@@ -546,9 +546,9 @@ export default function AdminBlogPage() {
                 <button
                   key={pill.id}
                   onClick={() => handleStatusFilterChange(pill.id)}
-                  className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-medium transition-colors border cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-none text-[11px] font-mono font-medium transition-colors border cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                     statusFilter === pill.id
-                      ? "bg-brand-red/15 border-brand-red/40 text-brand-red font-bold"
+                      ? "bg-brand-red text-white border-brand-red font-bold"
                       : "bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white hover:bg-white/[0.05]"
                   }`}
                 >
@@ -565,7 +565,7 @@ export default function AdminBlogPage() {
               Loading blog articles...
             </div>
           ) : filteredPosts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 border border-white/[0.08] rounded-xl bg-[#0d0d0d] text-center p-6">
+            <div className="flex flex-col items-center justify-center py-16 border border-white/[0.08] rounded-none bg-[#0d0d0d] text-center p-6">
               <BookOpen className="w-8 h-8 text-neutral-600 mb-3" />
               <p className="text-neutral-400 text-sm mb-4">
                 {posts.length === 0
@@ -575,7 +575,7 @@ export default function AdminBlogPage() {
               {posts.length === 0 ? (
                 <button
                   onClick={() => setEditingPost({})}
-                  className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg border-none cursor-pointer"
+                  className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded-none border border-brand-red cursor-pointer"
                 >
                   <Plus className="w-4 h-4" /> Add Article
                 </button>
@@ -585,14 +585,14 @@ export default function AdminBlogPage() {
                     handleSearchChange("");
                     handleStatusFilterChange("ALL");
                   }}
-                  className="inline-flex items-center gap-2 bg-white/[0.05] hover:bg-white/10 text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg border border-white/10 cursor-pointer"
+                  className="inline-flex items-center gap-2 bg-white/[0.05] hover:bg-white/10 text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded-none border border-white/10 cursor-pointer"
                 >
                   Reset Filters
                 </button>
               )}
             </div>
           ) : (
-            <div className="bg-[#0d0d0d] border border-white/[0.08] rounded-xl overflow-hidden shadow-lg">
+            <div className="bg-[#0d0d0d] border border-white/[0.08] rounded-none overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -628,7 +628,7 @@ export default function AdminBlogPage() {
                           <td className="px-4 py-2.5 sm:px-5 sm:py-2.5">
                             <div className="flex items-center gap-3">
                               {/* Cover Thumbnail */}
-                              <div className="w-11 h-8 rounded-md overflow-hidden bg-white/[0.04] border border-white/10 shrink-0 flex items-center justify-center">
+                              <div className="w-11 h-8 rounded-none overflow-hidden bg-white/[0.04] border border-white/10 shrink-0 flex items-center justify-center">
                                 {post.coverImageUrl ? (
                                   // eslint-disable-next-line @next/next/no-img-element
                                   <img
@@ -650,7 +650,7 @@ export default function AdminBlogPage() {
                                   </span>
                                   {Array.isArray(post.tags) &&
                                     post.tags.length > 0 && (
-                                      <span className="hidden sm:inline-flex items-center text-[10px] font-mono text-neutral-400 bg-white/[0.04] border border-white/10 px-1.5 py-0.5 rounded">
+                                      <span className="hidden sm:inline-flex items-center text-[10px] font-mono text-neutral-400 bg-white/[0.04] border border-white/10 px-1.5 py-0.5 rounded-none">
                                         #{post.tags[0]}
                                         {post.tags.length > 1
                                           ? ` +${post.tags.length - 1}`
@@ -668,22 +668,22 @@ export default function AdminBlogPage() {
 
                           <td className="px-4 py-2.5 sm:px-5 sm:py-2.5 whitespace-nowrap">
                             {postStatus === "PUBLISHED" && (
-                              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-emerald-400 bg-emerald-950/40 border border-emerald-500/25 px-2 py-0.5 rounded">
+                              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-emerald-400 bg-emerald-950/40 border border-emerald-500/25 px-2 py-0.5 rounded-none">
                                 <Eye className="w-3 h-3" /> Published
                               </span>
                             )}
                             {postStatus === "SCHEDULED" && (
-                              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-amber-400 bg-amber-950/40 border border-amber-500/25 px-2 py-0.5 rounded">
+                              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-amber-400 bg-amber-950/40 border border-amber-500/25 px-2 py-0.5 rounded-none">
                                 <Clock className="w-3 h-3" /> Scheduled
                               </span>
                             )}
                             {postStatus === "DRAFT" && (
-                              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-neutral-400 bg-white/[0.04] border border-white/10 px-2 py-0.5 rounded">
+                              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-neutral-400 bg-white/[0.04] border border-white/10 px-2 py-0.5 rounded-none">
                                 <EyeOff className="w-3 h-3" /> Draft
                               </span>
                             )}
                             {postStatus === "PRIVATE" && (
-                              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-purple-400 bg-purple-950/40 border border-purple-500/25 px-2 py-0.5 rounded">
+                              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-purple-400 bg-purple-950/40 border border-purple-500/25 px-2 py-0.5 rounded-none">
                                 <Lock className="w-3 h-3" /> Private
                               </span>
                             )}
@@ -729,14 +729,14 @@ export default function AdminBlogPage() {
                               <button
                                 onClick={() => setEditingPost(post)}
                                 aria-label="Edit post"
-                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-neutral-300 border-none cursor-pointer transition-colors"
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-none bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-neutral-300 cursor-pointer transition-colors"
                               >
                                 <Pencil className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => handleOpenDeleteModal(post)}
                                 aria-label="Delete post"
-                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/[0.05] hover:bg-rose-500/20 flex items-center justify-center text-neutral-300 hover:text-rose-400 border-none cursor-pointer transition-colors"
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-none bg-white/[0.04] hover:bg-rose-500/20 border border-white/10 flex items-center justify-center text-neutral-300 hover:text-rose-400 cursor-pointer transition-colors"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -780,7 +780,7 @@ export default function AdminBlogPage() {
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={safePage === 1}
                       aria-label="Previous page"
-                      className={`h-8 px-2.5 sm:px-3 rounded-lg border text-xs font-mono font-medium flex items-center gap-1 transition-colors ${
+                      className={`h-8 px-2.5 sm:px-3 rounded-none border text-xs font-mono font-medium flex items-center gap-1 transition-colors ${
                         safePage === 1
                           ? "border-white/[0.04] text-neutral-600 bg-white/[0.01] cursor-not-allowed opacity-50"
                           : "border-white/10 text-neutral-300 hover:text-white hover:bg-white/[0.06] hover:border-white/20 bg-white/[0.02] cursor-pointer"
@@ -810,7 +810,7 @@ export default function AdminBlogPage() {
                           onClick={() => setCurrentPage(item)}
                           aria-current={isCurrent ? "page" : undefined}
                           aria-label={`Page ${item}`}
-                          className={`w-8 h-8 rounded-lg text-xs font-mono transition-colors flex items-center justify-center cursor-pointer ${
+                          className={`w-8 h-8 rounded-none text-xs font-mono transition-colors flex items-center justify-center cursor-pointer ${
                             isCurrent
                               ? "bg-brand-red text-white font-bold border border-brand-red shadow-sm cursor-default"
                               : "bg-white/[0.02] hover:bg-white/[0.08] text-neutral-300 hover:text-white border border-white/10 hover:border-white/20"
@@ -826,7 +826,7 @@ export default function AdminBlogPage() {
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={safePage === totalPages}
                       aria-label="Next page"
-                      className={`h-8 px-2.5 sm:px-3 rounded-lg border text-xs font-mono font-medium flex items-center gap-1 transition-colors ${
+                      className={`h-8 px-2.5 sm:px-3 rounded-none border text-xs font-mono font-medium flex items-center gap-1 transition-colors ${
                         safePage === totalPages
                           ? "border-white/[0.04] text-neutral-600 bg-white/[0.01] cursor-not-allowed opacity-50"
                           : "border-white/10 text-neutral-300 hover:text-white hover:bg-white/[0.06] hover:border-white/20 bg-white/[0.02] cursor-pointer"
@@ -868,14 +868,14 @@ export default function AdminBlogPage() {
         <div className="space-y-8">
           {/* Notifications */}
           {heroSuccess && (
-            <div className="flex items-center gap-2.5 text-xs text-brand-green bg-emerald-950/40 border border-emerald-500/30 rounded-lg p-3.5">
+            <div className="flex items-center gap-2.5 text-xs text-brand-green bg-emerald-950/40 border border-emerald-500/30 rounded-none p-3.5">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{heroSuccess}</span>
             </div>
           )}
 
           {heroError && (
-            <div className="flex items-center gap-2.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/25 rounded-lg p-3.5">
+            <div className="flex items-center gap-2.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/25 rounded-none p-3.5">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{heroError}</span>
             </div>
@@ -896,7 +896,7 @@ export default function AdminBlogPage() {
               </div>
 
               {/* Preview Container */}
-              <div className="relative w-full overflow-hidden bg-[#080808] border border-white/10 rounded-xl min-h-[300px] sm:min-h-[360px] flex items-center select-none shadow-2xl">
+              <div className="relative w-full overflow-hidden bg-[#080808] border border-white/10 rounded-none min-h-[300px] sm:min-h-[360px] flex items-center select-none shadow-2xl">
                 {/* Background Image in Preview */}
                 <div className="absolute inset-0 z-0">
                   {heroForm.heroBannerImageUrl ? (
@@ -927,7 +927,7 @@ export default function AdminBlogPage() {
                 {/* Content Overlay */}
                 <div className="relative z-10 p-6 sm:p-10 max-w-xl lg:max-w-2xl">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="w-2 h-2 rounded-full bg-brand-red" />
+                    <span className="w-2 h-2 rounded-none bg-brand-red" />
                     <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-neutral-300">
                       {heroForm.heroEyebrow || "OUR BLOG"}
                     </span>
@@ -952,7 +952,7 @@ export default function AdminBlogPage() {
                       "Tips, trends and tutorials on video editing, motion graphics, content creation and growing your brand."}
                   </p>
 
-                  <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-red text-white text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-md">
+                  <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-red text-white text-xs font-mono font-bold uppercase tracking-wider rounded-none border border-brand-red">
                     <span>
                       {heroForm.heroCtaText || "EXPLORE ALL ARTICLES"}
                     </span>
@@ -961,14 +961,14 @@ export default function AdminBlogPage() {
                 </div>
 
                 {/* Studio Label */}
-                <div className="absolute top-4 right-4 z-10 px-2.5 py-1 rounded bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                <div className="absolute top-4 right-4 z-10 px-2.5 py-1 rounded-none bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono uppercase tracking-wider text-neutral-400">
                   Full-Width Banner
                 </div>
               </div>
             </div>
 
             {/* 2. Banner Image Upload & Settings Section */}
-            <div className="bg-[#0d0d0d] border border-white/[0.08] rounded-xl p-6 sm:p-8 space-y-6">
+            <div className="bg-[#0d0d0d] border border-white/[0.08] rounded-none p-6 sm:p-8 space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-5 h-5 text-brand-red" />
@@ -998,7 +998,7 @@ export default function AdminBlogPage() {
                       type="button"
                       disabled={uploadingImage}
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg border border-white/10 transition-colors cursor-pointer disabled:opacity-50"
+                      className="inline-flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded-none border border-white/10 transition-colors cursor-pointer disabled:opacity-50"
                     >
                       {uploadingImage ? (
                         <>
@@ -1019,7 +1019,7 @@ export default function AdminBlogPage() {
                       <button
                         type="button"
                         onClick={handleRemoveImage}
-                        className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-rose-400 px-3 py-2.5 rounded-lg hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-rose-400 px-3 py-2.5 rounded-none hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer"
                       >
                         <XIcon className="w-4 h-4" />
                         Remove Banner
@@ -1050,7 +1050,7 @@ export default function AdminBlogPage() {
                           e.target.value,
                         )
                       }
-                      className="w-full bg-black/60 border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-sans"
+                      className="w-full bg-black/60 border border-white/10 rounded-none px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-sans"
                     >
                       {POSITION_OPTIONS.map((pos) => (
                         <option
@@ -1075,7 +1075,7 @@ export default function AdminBlogPage() {
                         handleHeroChange("heroBannerImageAlt", e.target.value)
                       }
                       placeholder="e.g. DesignTouch+ Creative Studio"
-                      className="w-full bg-black/60 border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-sans"
+                      className="w-full bg-black/60 border border-white/10 rounded-none px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-sans"
                     />
                   </div>
                 </div>
@@ -1083,7 +1083,7 @@ export default function AdminBlogPage() {
             </div>
 
             {/* 3. Hero Text & Copy Section */}
-            <div className="bg-[#0d0d0d] border border-white/[0.08] rounded-xl p-6 sm:p-8 space-y-6">
+            <div className="bg-[#0d0d0d] border border-white/[0.08] rounded-none p-6 sm:p-8 space-y-6">
               <div className="flex items-center gap-2 pb-4 border-b border-white/[0.06]">
                 <LayoutTemplate className="w-5 h-5 text-brand-red" />
                 <h3 className="font-display font-bold text-base text-white uppercase tracking-wide">
@@ -1103,7 +1103,7 @@ export default function AdminBlogPage() {
                       handleHeroChange("heroEyebrow", e.target.value)
                     }
                     placeholder="e.g. OUR BLOG"
-                    className="w-full bg-black/60 border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-mono"
+                    className="w-full bg-black/60 border border-white/10 rounded-none px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-mono"
                   />
                 </div>
 
@@ -1118,7 +1118,7 @@ export default function AdminBlogPage() {
                       handleHeroChange("heroHeadlineLine1", e.target.value)
                     }
                     placeholder="e.g. INSIGHTS THAT"
-                    className="w-full bg-black/60 border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-display uppercase font-bold"
+                    className="w-full bg-black/60 border border-white/10 rounded-none px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-display uppercase font-bold"
                   />
                 </div>
 
@@ -1133,7 +1133,7 @@ export default function AdminBlogPage() {
                       handleHeroChange("heroHeadlineLine2", e.target.value)
                     }
                     placeholder="e.g. INSPIRE"
-                    className="w-full bg-black/60 border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-display uppercase font-bold"
+                    className="w-full bg-black/60 border border-white/10 rounded-none px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-display uppercase font-bold"
                   />
                 </div>
               </div>
@@ -1150,7 +1150,7 @@ export default function AdminBlogPage() {
                       handleHeroChange("heroHeadlineHighlight", e.target.value)
                     }
                     placeholder="e.g. CREATIVITY."
-                    className="w-full bg-black/60 border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-brand-red font-display uppercase font-bold outline-none focus:border-brand-red"
+                    className="w-full bg-black/60 border border-white/10 rounded-none px-3.5 py-2.5 text-xs text-brand-red font-display uppercase font-bold outline-none focus:border-brand-red"
                   />
                   <p className="text-[10px] text-neutral-500 mt-1.5 font-mono">
                     This text renders in signature red accent next to Line 2.
@@ -1168,7 +1168,7 @@ export default function AdminBlogPage() {
                       handleHeroChange("heroCtaText", e.target.value)
                     }
                     placeholder="e.g. EXPLORE ALL ARTICLES"
-                    className="w-full bg-black/60 border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-mono"
+                    className="w-full bg-black/60 border border-white/10 rounded-none px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-mono"
                   />
                 </div>
 
@@ -1183,7 +1183,7 @@ export default function AdminBlogPage() {
                       handleHeroChange("heroCtaLink", e.target.value)
                     }
                     placeholder="e.g. #articles or /blog#articles"
-                    className="w-full bg-black/60 border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-mono"
+                    className="w-full bg-black/60 border border-white/10 rounded-none px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand-red font-mono"
                   />
                 </div>
               </div>
@@ -1199,7 +1199,7 @@ export default function AdminBlogPage() {
                     handleHeroChange("heroDescription", e.target.value)
                   }
                   placeholder="Tips, trends and tutorials on video editing, motion graphics, content creation and growing your brand."
-                  className="w-full bg-black/60 border border-white/10 rounded-lg p-3.5 text-xs text-white outline-none focus:border-brand-red font-sans leading-relaxed resize-y"
+                  className="w-full bg-black/60 border border-white/10 rounded-none p-3.5 text-xs text-white outline-none focus:border-brand-red font-sans leading-relaxed resize-y"
                 />
               </div>
             </div>
@@ -1210,7 +1210,7 @@ export default function AdminBlogPage() {
                 type="button"
                 onClick={loadHeroContent}
                 disabled={loadingHero || savingHero}
-                className="inline-flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 hover:text-white text-xs font-mono font-semibold uppercase tracking-wider px-5 py-3 rounded-lg border border-white/10 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 hover:text-white text-xs font-mono font-semibold uppercase tracking-wider px-5 py-3 rounded-none border border-white/10 transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Reset
@@ -1219,7 +1219,7 @@ export default function AdminBlogPage() {
               <button
                 type="submit"
                 disabled={savingHero || uploadingImage}
-                className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-6 py-3 rounded-lg border-none cursor-pointer transition-colors shadow-[0_4px_15px_rgba(239,68,68,0.3)] disabled:opacity-50"
+                className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-6 py-3 rounded-none border border-brand-red cursor-pointer transition-colors disabled:opacity-50"
               >
                 {savingHero ? (
                   <>
@@ -1242,14 +1242,14 @@ export default function AdminBlogPage() {
       {activeTab === "CATEGORIES" && (
         <div className="space-y-4">
           {categoriesError && (
-            <div className="flex items-center gap-2 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg p-3.5">
+            <div className="flex items-center gap-2 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-none p-3.5">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{categoriesError}</span>
             </div>
           )}
 
           {/* Categories Table Container */}
-          <div className="bg-[#0d0d0d] border border-white/[0.08] rounded-xl overflow-hidden shadow-xl">
+          <div className="bg-[#0d0d0d] border border-white/[0.08] rounded-none overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -1300,7 +1300,7 @@ export default function AdminBlogPage() {
                         {/* Name */}
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2.5">
-                            <span className="w-2 h-2 rounded-full bg-brand-red shrink-0" />
+                            <span className="w-2 h-2 rounded-none bg-brand-red shrink-0" />
                             <span className="text-xs sm:text-sm font-bold text-white tracking-wide">
                               {cat.name}
                             </span>
@@ -1309,7 +1309,7 @@ export default function AdminBlogPage() {
 
                         {/* Slug */}
                         <td className="py-4 px-4">
-                          <span className="text-[11px] font-mono text-neutral-400 bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
+                          <span className="text-[11px] font-mono text-neutral-400 bg-white/[0.04] px-2 py-0.5 rounded-none border border-white/[0.06]">
                             {cat.slug}
                           </span>
                         </td>
@@ -1331,7 +1331,7 @@ export default function AdminBlogPage() {
                         {/* Post Count Badge */}
                         <td className="py-4 px-4 text-center">
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-[10px] font-mono font-bold uppercase tracking-wider ${
                               (cat.postCount || 0) > 0
                                 ? "bg-brand-red/15 text-brand-red border border-brand-red/30"
                                 : "bg-neutral-800 text-neutral-400 border border-neutral-700"
@@ -1347,7 +1347,7 @@ export default function AdminBlogPage() {
                             <button
                               type="button"
                               onClick={() => setEditingCategory(cat)}
-                              className="p-2 text-neutral-400 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors cursor-pointer border-none bg-transparent"
+                              className="p-2 text-neutral-400 hover:text-white hover:bg-white/[0.06] rounded-none border border-white/10 hover:border-white/20 transition-colors cursor-pointer bg-transparent"
                               title="Edit Category"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -1355,7 +1355,7 @@ export default function AdminBlogPage() {
                             <button
                               type="button"
                               onClick={() => setCategoryToDelete(cat)}
-                              className="p-2 text-neutral-400 hover:text-brand-red hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer border-none bg-transparent"
+                              className="p-2 text-neutral-400 hover:text-brand-red hover:bg-red-500/10 rounded-none border border-white/10 hover:border-red-500/20 transition-colors cursor-pointer bg-transparent"
                               title="Delete Category"
                             >
                               <Trash2 className="w-3.5 h-3.5" />

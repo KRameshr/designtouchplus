@@ -14,6 +14,8 @@ import {
   Users,
   Building2,
   Tag,
+  Mail,
+  MessageSquare,
   Menu,
   X,
 } from "lucide-react";
@@ -26,8 +28,10 @@ const NAV_ITEMS = [
   { label: "Blog", href: "/admin/blog", icon: FileText },
   { label: "Services", href: "/admin/services", icon: Sparkles },
   { label: "Pricing", href: "/admin/pricing", icon: Tag },
+  { label: "Contact Page", href: "/admin/contact", icon: Mail },
+  { label: "Chat Leads", href: "/admin/chat-leads", icon: MessageSquare },
   { label: "Testimonials", href: "/admin/testimonials", icon: Quote },
-  { label: "Team", href: "/admin/team", icon: Users },
+  { label: "About", href: "/admin/about", icon: Users },
   { label: "Clients", href: "/admin/clients", icon: Building2 },
 ];
 
@@ -150,7 +154,12 @@ export default function AdminLayout({ children }) {
 
         <nav className="flex flex-col gap-1 flex-1 overflow-y-auto">
           {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-            const active = pathname === href;
+            const active =
+              pathname === href ||
+              (href === "/admin/about" &&
+                (pathname === "/admin/team" ||
+                  pathname.startsWith("/admin/about") ||
+                  pathname.startsWith("/admin/team")));
             return (
               <Link
                 key={href}

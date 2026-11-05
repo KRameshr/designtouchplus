@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   LayoutTemplate,
   Layers,
@@ -751,7 +752,7 @@ export default function AdminPricingPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-white/10">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="w-2 h-2 rounded-full bg-brand-red shrink-0" />
+            <span className="w-2 h-2 rounded-none bg-brand-red shrink-0" />
             <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-neutral-400">
               CMS MANAGEMENT
             </span>
@@ -1030,7 +1031,7 @@ export default function AdminPricingPage() {
                   {/* Banner List */}
                   {heroBanners.length === 0 ? (
                     <div className="p-8 border border-dashed border-white/15 bg-white/[0.01] text-center space-y-3">
-                      <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-neutral-400">
+                      <div className="w-10 h-10 rounded-none bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-neutral-400">
                         <ImageIcon className="w-5 h-5 text-brand-red" />
                       </div>
                       <div>
@@ -1169,11 +1170,13 @@ export default function AdminPricingPage() {
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
                               {/* Left Thumbnail & File Upload */}
                               <div className="lg:col-span-4 space-y-2.5">
-                                <div className="relative aspect-[16/9] w-full bg-black border border-white/15 rounded-[2px] overflow-hidden group">
+                                <div className="relative aspect-[16/9] w-full bg-black border border-white/15 rounded-none overflow-hidden group">
                                   {banner.imageUrl ? (
-                                    <img
+                                    <Image
                                       src={banner.imageUrl}
                                       alt={banner.altText || bannerTitle}
+                                      fill
+                                      unoptimized
                                       className="w-full h-full object-cover select-none"
                                       style={{
                                         objectPosition: banner.objectPosition || "center",
@@ -1390,7 +1393,7 @@ export default function AdminPricingPage() {
                   <div className="flex items-center gap-2 text-neutral-400">
                     <Eye className="w-4 h-4 text-brand-red" />
                     <span className="text-xs font-mono font-semibold uppercase tracking-wider text-white">
-                      Live Hero Preview (Interactive Split Layout)
+                      Live Hero Preview (Cinematic Full-Width Background Overlay)
                     </span>
                   </div>
                   <span className="text-[10px] font-mono uppercase text-brand-green">
@@ -1402,132 +1405,122 @@ export default function AdminPricingPage() {
                   </span>
                 </div>
 
-                <div className="relative overflow-hidden border border-white/10 bg-[#080808] p-6 sm:p-8 rounded-[8px]">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 xl:gap-8">
-                    {/* Left Column Preview */}
-                    <div className="relative z-10 w-full lg:w-[42%] shrink-0 flex flex-col justify-center">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="w-2 h-2 bg-brand-red shrink-0" />
-                        <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-neutral-300">
-                          {heroForm.heroEyebrow || "PRICING PLANS"}
-                        </span>
-                      </div>
-
-                      <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-white mb-3 leading-[1.05]">
-                        <span className="block">{heroForm.heroHeadlineLine1 || "SIMPLE PRICING."}</span>
-                        <span className="block">
-                          {heroForm.heroHeadlineLine2 || "POWERFUL"}{" "}
-                          <span
-                            className={
-                              heroForm.heroHighlightStyle === "red"
-                                ? "text-brand-red"
-                                : heroForm.heroHighlightStyle === "green"
-                                ? "text-brand-green"
-                                : "bg-gradient-to-r from-brand-red via-orange-400 to-brand-green bg-clip-text text-transparent"
-                            }
+                <div className="relative overflow-hidden border border-white/10 bg-[#080808] min-h-[320px] sm:min-h-[380px] rounded-none flex items-center p-6 sm:p-10 select-none">
+                  {/* Full Background Banner / Carousel */}
+                  <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+                    {activePreviewBanners.length > 0 ? (
+                      <div
+                        className="flex w-full h-full transition-transform duration-500 ease-out"
+                        style={{
+                          transform: `translate3d(-${(previewSlideIndex % activePreviewBanners.length) * 100}%, 0, 0)`,
+                        }}
+                      >
+                        {activePreviewBanners.map((b, i) => (
+                          <div
+                            key={b.id || i}
+                            className="relative w-full h-full min-w-full shrink-0 grow-0 basis-full overflow-hidden bg-[#080808]"
                           >
-                            {heroForm.heroHeadlineHighlight || "RESULTS."}
-                          </span>
-                        </span>
-                      </h2>
-
-                      <p className="text-neutral-400 text-xs sm:text-sm leading-relaxed mb-5 max-w-md">
-                        {heroForm.heroDescription ||
-                          "Choose the perfect plan for your needs. All plans include high-quality editing, fast delivery and unlimited revisions."}
-                      </p>
-
-                      <div className="flex flex-wrap items-center gap-3">
-                        {heroForm.heroPrimaryCtaText && (
-                          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-red text-white text-xs font-mono font-bold uppercase tracking-wider">
-                            <span>{heroForm.heroPrimaryCtaText}</span>
-                            <span className="text-[10px]">→</span>
+                            <Image
+                              src={b.imageUrl}
+                              alt={b.altText || b.label || "Banner preview"}
+                              fill
+                              unoptimized
+                              className="w-full h-full object-cover select-none pointer-events-none"
+                              style={{
+                                objectPosition: b.objectPosition || "center right",
+                              }}
+                            />
                           </div>
-                        )}
-                        {heroForm.heroSecondaryCtaText && (
-                          <div className="inline-flex items-center gap-2 px-5 py-2.5 border border-white/20 text-white text-xs font-mono font-bold uppercase tracking-wider">
-                            <span>{heroForm.heroSecondaryCtaText}</span>
-                          </div>
-                        )}
+                        ))}
                       </div>
+                    ) : (
+                      <div className="w-full h-full bg-[#080808] relative overflow-hidden">
+                        <div
+                          aria-hidden="true"
+                          className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_30%,rgba(239,68,68,0.18),transparent_60%),radial-gradient(ellipse_at_20%_80%,rgba(34,197,94,0.12),transparent_55%)] pointer-events-none"
+                        />
+                      </div>
+                    )}
+
+                    {/* Dark scrim gradient matching public Pricing Hero */}
+                    <div
+                      className="absolute inset-0 pointer-events-none hidden sm:block"
+                      style={{
+                        background:
+                          "linear-gradient(90deg, rgba(8,8,8,0.92) 0%, rgba(8,8,8,0.78) 38%, rgba(8,8,8,0.38) 70%, rgba(8,8,8,0.16) 100%)",
+                      }}
+                      aria-hidden="true"
+                    />
+                    <div
+                      className="absolute inset-0 pointer-events-none sm:hidden"
+                      style={{
+                        background:
+                          "linear-gradient(180deg, rgba(8,8,8,0.92) 0%, rgba(8,8,8,0.80) 60%, rgba(8,8,8,0.48) 100%)",
+                      }}
+                      aria-hidden="true"
+                    />
+
+                    {/* Carousel slide indicators */}
+                    {activePreviewBanners.length > 1 && (
+                      <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-2.5 py-1.5 rounded-none border border-white/15">
+                        {activePreviewBanners.map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setPreviewSlideIndex(i)}
+                            className={`h-1.5 rounded-none transition-all duration-300 cursor-pointer ${
+                              previewSlideIndex % activePreviewBanners.length === i
+                                ? "w-5 bg-brand-red"
+                                : "w-1.5 bg-white/40 hover:bg-white/70"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Foreground Content Preview over the Image */}
+                  <div className="relative z-10 w-full max-w-xl">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="w-2 h-2 bg-brand-red shrink-0" />
+                      <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-neutral-300">
+                        {heroForm.heroEyebrow || "PRICING PLANS"}
+                      </span>
                     </div>
 
-                    {/* Right Column Preview (Banner Carousel or Fallback Motif) */}
-                    <div className="w-full lg:w-[56%] shrink-0">
-                      {activePreviewBanners.length > 0 ? (
-                        <div className="relative w-full aspect-[1.7/1] min-h-[220px] sm:min-h-[260px] bg-[#080808] rounded-[4px] overflow-hidden border border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.6)] group select-none">
-                          <div
-                            className="flex w-full h-full transition-transform duration-500 ease-out"
-                            style={{
-                              transform: `translate3d(-${(previewSlideIndex % activePreviewBanners.length) * 100}%, 0, 0)`,
-                            }}
-                          >
-                            {activePreviewBanners.map((b, i) => (
-                              <div
-                                key={b.id || i}
-                                className="relative w-full h-full min-w-full shrink-0 grow-0 basis-full overflow-hidden bg-[#080808]"
-                              >
-                                <img
-                                  src={b.imageUrl}
-                                  alt={b.altText || b.label || "Banner preview"}
-                                  className="w-full h-full object-cover"
-                                  style={{
-                                    objectPosition: b.objectPosition || "center",
-                                  }}
-                                />
-                              </div>
-                            ))}
-                          </div>
+                    <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-white mb-3 leading-[1.05]">
+                      <span className="block">{heroForm.heroHeadlineLine1 || "SIMPLE PRICING."}</span>
+                      <span className="block">
+                        {heroForm.heroHeadlineLine2 || "POWERFUL"}{" "}
+                        <span
+                          className={
+                            heroForm.heroHighlightStyle === "red"
+                              ? "text-brand-red"
+                              : heroForm.heroHighlightStyle === "green"
+                              ? "text-brand-green"
+                              : "bg-gradient-to-r from-brand-red via-orange-400 to-brand-green bg-clip-text text-transparent"
+                          }
+                        >
+                          {heroForm.heroHeadlineHighlight || "RESULTS."}
+                        </span>
+                      </span>
+                    </h2>
 
-                          {/* Subtle left-edge feather scrim */}
-                          <div
-                            className="absolute inset-y-0 left-0 w-8 sm:w-12 pointer-events-none z-10"
-                            style={{
-                              background:
-                                "linear-gradient(90deg, rgba(8,8,8,0.85) 0%, rgba(8,8,8,0.3) 50%, rgba(8,8,8,0) 100%)",
-                            }}
-                            aria-hidden="true"
-                          />
+                    <p className="text-neutral-300 text-xs sm:text-sm leading-relaxed mb-5 max-w-md">
+                      {heroForm.heroDescription ||
+                        "Choose the perfect plan for your needs. All plans include high-quality editing, fast delivery and unlimited revisions."}
+                    </p>
 
-                          {/* Studio badge */}
-                          <div className="absolute top-3 right-3 px-2 py-1 bg-black/70 backdrop-blur border border-white/15 text-[9px] font-mono uppercase tracking-wider text-neutral-300 z-10">
-                            DT+ PRODUCTION WORKSTATION
-                          </div>
-
-                          {/* Carousel indicators */}
-                          {activePreviewBanners.length > 1 && (
-                            <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 bg-black/80 px-2 py-1 rounded-full border border-white/15">
-                              {activePreviewBanners.map((_, i) => (
-                                <button
-                                  key={i}
-                                  type="button"
-                                  onClick={() => setPreviewSlideIndex(i)}
-                                  className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
-                                    previewSlideIndex % activePreviewBanners.length === i
-                                      ? "w-4 bg-brand-red"
-                                      : "w-1 bg-white/40"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          )}
+                    <div className="flex flex-wrap items-center gap-3">
+                      {heroForm.heroPrimaryCtaText && (
+                        <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-red text-white text-xs font-mono font-bold uppercase tracking-wider">
+                          <span>{heroForm.heroPrimaryCtaText}</span>
+                          <span className="text-[10px]">→</span>
                         </div>
-                      ) : (
-                        <div className="relative w-full aspect-[1.7/1] min-h-[220px] sm:min-h-[260px] bg-[#0c0c0c] rounded-[4px] overflow-hidden border border-dashed border-white/15 flex flex-col items-center justify-center p-6 text-center select-none">
-                          <div
-                            aria-hidden="true"
-                            className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_40%,rgba(255,255,255,0.06),transparent_55%),radial-gradient(ellipse_at_95%_90%,rgba(239,68,68,0.08),transparent_45%)]"
-                          />
-                          <div className="relative z-10 flex flex-col items-center gap-2 max-w-xs">
-                            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neutral-400">
-                              <ImageIcon className="w-5 h-5 text-brand-red" />
-                            </div>
-                            <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
-                              Fallback Studio Motif Active
-                            </span>
-                            <p className="text-[10px] font-mono text-neutral-400 leading-normal">
-                              Add a workstation banner above to activate the automatic 1.5s multi-banner carousel.
-                            </p>
-                          </div>
+                      )}
+                      {heroForm.heroSecondaryCtaText && (
+                        <div className="inline-flex items-center gap-2 px-5 py-2.5 border border-white/20 text-white text-xs font-mono font-bold uppercase tracking-wider">
+                          <span>{heroForm.heroSecondaryCtaText}</span>
                         </div>
                       )}
                     </div>
@@ -1606,11 +1599,11 @@ export default function AdminPricingPage() {
 
               {/* Sub-toggle */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-[#111] border border-white/10">
-                <div className="inline-flex max-w-full bg-[#0d0d0d] border border-white/10 rounded-full p-1">
+                <div className="inline-flex max-w-full bg-[#0d0d0d] border border-white/10 rounded-none p-1">
                   <button
                     type="button"
                     onClick={() => setPlanType("ONE_TIME")}
-                    className={`text-xs font-mono uppercase tracking-wider px-4 py-1.5 rounded-full transition-colors cursor-pointer ${
+                    className={`text-xs font-mono uppercase tracking-wider px-4 py-1.5 rounded-none transition-colors cursor-pointer ${
                       planType === "ONE_TIME"
                         ? "bg-brand-red text-white font-bold"
                         : "text-neutral-400 hover:text-white"
@@ -1631,7 +1624,7 @@ export default function AdminPricingPage() {
                   <button
                     type="button"
                     onClick={() => setPlanType("MONTHLY")}
-                    className={`text-xs font-mono uppercase tracking-wider px-4 py-1.5 rounded-full transition-colors cursor-pointer ${
+                    className={`text-xs font-mono uppercase tracking-wider px-4 py-1.5 rounded-none transition-colors cursor-pointer ${
                       planType === "MONTHLY"
                         ? "bg-brand-red text-white font-bold"
                         : "text-neutral-400 hover:text-white"
@@ -1900,19 +1893,22 @@ export default function AdminPricingPage() {
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         {/* Display order index */}
-                        <span className="w-7 h-7 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-xs font-mono text-neutral-400 shrink-0">
+                        <span className="w-7 h-7 rounded-none bg-white/[0.04] border border-white/10 flex items-center justify-center text-xs font-mono text-neutral-400 shrink-0">
                           {index + 1}
                         </span>
 
                         {/* Icon preview (custom uploaded or preset) */}
                         <div
-                          className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center shrink-0 p-1 overflow-hidden"
+                          className="w-8 h-8 rounded-none bg-white/[0.04] border border-white/10 flex items-center justify-center shrink-0 p-1 overflow-hidden"
                           title={addOn.customIconUrl ? "Custom uploaded icon" : `Preset: ${addOn.icon || "default"}`}
                         >
                           {addOn.customIconUrl ? (
-                            <img
+                            <Image
                               src={addOn.customIconUrl}
                               alt=""
+                              width={32}
+                              height={32}
+                              unoptimized
                               className="w-full h-full object-contain"
                             />
                           ) : (
@@ -2055,7 +2051,7 @@ export default function AdminPricingPage() {
                       }`}
                     >
                       <div className="flex items-center gap-4 min-w-0">
-                        <span className="w-8 h-8 rounded-full bg-brand-red/10 border border-brand-red/30 flex items-center justify-center text-xs font-mono font-bold text-brand-red shrink-0">
+                        <span className="w-8 h-8 rounded-none bg-brand-red/10 border border-brand-red/30 flex items-center justify-center text-xs font-mono font-bold text-brand-red shrink-0">
                           {step.stepNumber}
                         </span>
 
@@ -2191,7 +2187,7 @@ export default function AdminPricingPage() {
                       }`}
                     >
                       <div className="flex items-start gap-4 min-w-0">
-                        <span className="w-7 h-7 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-xs font-mono text-neutral-400 shrink-0 mt-0.5">
+                        <span className="w-7 h-7 rounded-none bg-white/[0.04] border border-white/10 flex items-center justify-center text-xs font-mono text-neutral-400 shrink-0 mt-0.5">
                           {index + 1}
                         </span>
 

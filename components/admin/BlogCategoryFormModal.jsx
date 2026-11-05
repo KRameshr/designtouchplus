@@ -73,15 +73,15 @@ export default function BlogCategoryFormModal({ category, onClose, onSaved }) {
   };
 
   const inputClasses =
-    "bg-black/60 border border-white/10 focus:border-brand-red rounded-lg px-3.5 py-2.5 text-xs text-white placeholder-neutral-500 outline-none transition-colors w-full min-w-0 font-sans";
+    "bg-black/60 border border-white/10 focus:border-brand-red rounded-none px-3.5 py-2.5 text-xs text-white placeholder-neutral-500 outline-none transition-colors w-full min-w-0 font-sans";
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overflow-y-auto backdrop-blur-sm">
-      <div className="bg-[#0e0e0e] border border-white/15 rounded-xl w-full max-w-md shadow-2xl my-auto overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-[#0e0e0e] border border-white/15 rounded-none w-full max-w-md shadow-2xl my-auto overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/[0.08] bg-[#121212]">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-brand-red rounded-full inline-block shrink-0" aria-hidden="true" />
+            <span className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0" aria-hidden="true" />
             <h2 className="text-xs font-bold uppercase tracking-widest text-white font-mono">
               {isEditing ? "Edit Blog Category" : "New Blog Category"}
             </h2>
@@ -89,7 +89,7 @@ export default function BlogCategoryFormModal({ category, onClose, onSaved }) {
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-white bg-transparent border border-transparent hover:border-white/10 rounded-lg cursor-pointer transition-colors"
+            className="w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-white bg-transparent border border-transparent hover:border-white/10 rounded-none cursor-pointer transition-colors"
             aria-label="Close modal"
           >
             <XIcon className="w-4 h-4" />
@@ -99,8 +99,8 @@ export default function BlogCategoryFormModal({ category, onClose, onSaved }) {
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
           {error && (
-            <div className="flex items-start gap-2.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/25 rounded-lg px-3.5 py-2.5">
-              <span className="w-1.5 h-1.5 bg-brand-red rounded-full shrink-0 mt-1" />
+            <div className="flex items-start gap-2.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/25 rounded-none px-3.5 py-2.5">
+              <span className="w-1.5 h-1.5 bg-brand-red rounded-none shrink-0 mt-1" />
               <span className="break-words min-w-0">{error}</span>
             </div>
           )}
@@ -169,14 +169,14 @@ export default function BlogCategoryFormModal({ category, onClose, onSaved }) {
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="px-4 py-2.5 rounded-lg text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors cursor-pointer border-none"
+              className="px-4 py-2.5 rounded-none text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors cursor-pointer border border-white/10"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-2.5 rounded-lg border-none cursor-pointer transition-colors shadow-[0_4px_15px_rgba(239,68,68,0.25)] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-2.5 rounded-none border border-brand-red cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               <span>{isEditing ? "Save Changes" : "Create Category"}</span>

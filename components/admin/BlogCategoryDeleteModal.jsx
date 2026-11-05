@@ -155,12 +155,12 @@ export default function BlogCategoryDeleteModal({
   const hasArticles = articles.length > 0;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 overflow-y-auto backdrop-blur-sm">
-      <div className="bg-[#0e0e0e] border border-white/15 rounded-xl w-full max-w-2xl shadow-2xl my-auto overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-[#0e0e0e] border border-white/15 rounded-none w-full max-w-2xl shadow-2xl my-auto overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/[0.08] bg-[#141414]">
           <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-lg bg-red-500/15 border border-red-500/30 flex items-center justify-center text-brand-red">
+            <span className="w-8 h-8 rounded-none bg-red-500/15 border border-red-500/30 flex items-center justify-center text-brand-red">
               <AlertTriangle className="w-4 h-4" />
             </span>
             <div>
@@ -176,7 +176,7 @@ export default function BlogCategoryDeleteModal({
             type="button"
             onClick={onClose}
             disabled={processing}
-            className="w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-white bg-transparent border border-transparent hover:border-white/10 rounded-lg cursor-pointer transition-colors"
+            className="w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-white bg-transparent border border-transparent hover:border-white/10 rounded-none cursor-pointer transition-colors"
             aria-label="Close modal"
           >
             <XIcon className="w-4 h-4" />
@@ -186,8 +186,8 @@ export default function BlogCategoryDeleteModal({
         {/* Modal Body */}
         <div className="p-5 sm:p-6 space-y-5 max-h-[75vh] overflow-y-auto">
           {error && (
-            <div className="flex items-start gap-2.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/25 rounded-lg px-3.5 py-2.5">
-              <span className="w-1.5 h-1.5 bg-brand-red rounded-full shrink-0 mt-1" />
+            <div className="flex items-start gap-2.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/25 rounded-none px-3.5 py-2.5">
+              <span className="w-1.5 h-1.5 bg-brand-red rounded-none shrink-0 mt-1" />
               <span className="break-words min-w-0">{error}</span>
             </div>
           )}
@@ -200,7 +200,7 @@ export default function BlogCategoryDeleteModal({
           ) : !hasArticles ? (
             /* CASE A: No Articles */
             <div className="space-y-4">
-              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-300">
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-none text-xs text-emerald-300">
                 <p className="font-semibold mb-1">Zero articles currently assigned</p>
                 <p className="text-emerald-400/80 text-[11px]">
                   This category is not currently used by any blog posts. It is safe to delete immediately.
@@ -209,7 +209,7 @@ export default function BlogCategoryDeleteModal({
 
               <p className="text-xs text-neutral-300 leading-relaxed">
                 Are you sure you want to permanently delete the category{" "}
-                <span className="text-white font-bold font-mono">"{category.name}"</span>?
+                <span className="text-white font-bold font-mono">&quot;{category.name}&quot;</span>?
                 This action cannot be undone.
               </p>
 
@@ -218,7 +218,7 @@ export default function BlogCategoryDeleteModal({
                   type="button"
                   onClick={onClose}
                   disabled={processing}
-                  className="px-4 py-2.5 rounded-lg text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors cursor-pointer border-none"
+                  className="px-4 py-2.5 rounded-none text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors cursor-pointer border border-white/10"
                 >
                   Cancel
                 </button>
@@ -226,7 +226,7 @@ export default function BlogCategoryDeleteModal({
                   type="button"
                   onClick={handleDeleteEmpty}
                   disabled={processing}
-                  className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-2.5 rounded-lg border-none cursor-pointer transition-colors shadow-[0_4px_15px_rgba(239,68,68,0.25)] disabled:opacity-50"
+                  className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-2.5 rounded-none border border-brand-red cursor-pointer transition-colors disabled:opacity-50"
                 >
                   {processing ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -240,7 +240,7 @@ export default function BlogCategoryDeleteModal({
           ) : (
             /* CASE B: Contains Articles */
             <div className="space-y-5">
-              <div className="p-4 bg-amber-500/10 border border-amber-500/25 rounded-lg text-xs text-amber-200">
+              <div className="p-4 bg-amber-500/10 border border-amber-500/25 rounded-none text-xs text-amber-200">
                 <div className="flex items-center gap-2 font-bold mb-1">
                   <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
                   <span>Category Contains {articles.length} Article{articles.length === 1 ? "" : "s"}</span>
@@ -251,14 +251,14 @@ export default function BlogCategoryDeleteModal({
               </div>
 
               {/* Tab Selector: Option 1 vs Option 2 */}
-              <div className="grid grid-cols-2 gap-2 p-1 bg-black/50 border border-white/10 rounded-lg">
+              <div className="grid grid-cols-2 gap-2 p-1 bg-black/50 border border-white/10 rounded-none">
                 <button
                   type="button"
                   onClick={() => setActiveTab("MOVE")}
-                  className={`py-2 px-3 text-xs font-mono font-semibold uppercase tracking-wider rounded-md transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`py-2 px-3 text-xs font-mono font-semibold uppercase tracking-wider rounded-none transition-all cursor-pointer flex items-center justify-center gap-2 border ${
                     activeTab === "MOVE"
-                      ? "bg-brand-red text-white shadow-md font-bold"
-                      : "text-neutral-400 hover:text-white hover:bg-white/[0.04]"
+                      ? "bg-brand-red text-white border-brand-red font-bold"
+                      : "text-neutral-400 hover:text-white hover:bg-white/[0.04] border-transparent"
                   }`}
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -267,10 +267,10 @@ export default function BlogCategoryDeleteModal({
                 <button
                   type="button"
                   onClick={() => setActiveTab("DELETE")}
-                  className={`py-2 px-3 text-xs font-mono font-semibold uppercase tracking-wider rounded-md transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`py-2 px-3 text-xs font-mono font-semibold uppercase tracking-wider rounded-none transition-all cursor-pointer flex items-center justify-center gap-2 border ${
                     activeTab === "DELETE"
-                      ? "bg-red-950/80 border border-red-500/40 text-red-200 shadow-md font-bold"
-                      : "text-neutral-400 hover:text-white hover:bg-white/[0.04]"
+                      ? "bg-red-950/80 border-red-500/40 text-red-200 font-bold"
+                      : "text-neutral-400 hover:text-white hover:bg-white/[0.04] border-transparent"
                   }`}
                 >
                   <Trash2 className="w-3.5 h-3.5 text-rose-400" />
@@ -286,12 +286,12 @@ export default function BlogCategoryDeleteModal({
                       Reassign all <strong className="text-white">{articles.length}</strong> article(s) to another category. All article content, titles, slugs, cover images, and publication dates will be safely preserved.
                     </p>
                     <p className="text-neutral-400 text-[11px]">
-                      Once all articles have been reassigned, the category <strong className="text-white">"{category.name}"</strong> will be permanently deleted.
+                      Once all articles have been reassigned, the category <strong className="text-white">&quot;{category.name}&quot;</strong> will be permanently deleted.
                     </p>
                   </div>
 
                   {destinationCategories.length === 0 ? (
-                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-300">
+                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-none text-xs text-red-300">
                       No other categories exist. Please create another category first before moving articles.
                     </div>
                   ) : (
@@ -302,7 +302,7 @@ export default function BlogCategoryDeleteModal({
                       <select
                         value={destinationId}
                         onChange={(e) => setDestinationId(e.target.value)}
-                        className="bg-black/60 border border-white/10 focus:border-brand-red rounded-lg px-3.5 py-2.5 text-xs text-white outline-none transition-colors w-full cursor-pointer font-sans"
+                        className="bg-black/60 border border-white/10 focus:border-brand-red rounded-none px-3.5 py-2.5 text-xs text-white outline-none transition-colors w-full cursor-pointer font-sans"
                       >
                         {destinationCategories.map((c) => (
                           <option key={c.id} value={c.id} className="bg-[#141414] text-white">
@@ -318,11 +318,11 @@ export default function BlogCategoryDeleteModal({
                     <label className="text-[10px] font-mono font-semibold uppercase tracking-[0.14em] text-neutral-400 mb-1.5 block">
                       Articles to be reassigned ({articles.length})
                     </label>
-                    <div className="max-h-36 overflow-y-auto space-y-1.5 p-2 bg-black/40 border border-white/[0.08] rounded-lg">
+                    <div className="max-h-36 overflow-y-auto space-y-1.5 p-2 bg-black/40 border border-white/[0.08] rounded-none">
                       {articles.map((art) => (
                         <div
                           key={art.id}
-                          className="flex items-center justify-between text-xs text-neutral-300 py-1 px-2 hover:bg-white/[0.03] rounded"
+                          className="flex items-center justify-between text-xs text-neutral-300 py-1 px-2 hover:bg-white/[0.03] rounded-none"
                         >
                           <span className="truncate pr-2 font-medium">{art.title}</span>
                           <span className="text-[10px] font-mono text-neutral-500 shrink-0">
@@ -338,7 +338,7 @@ export default function BlogCategoryDeleteModal({
                       type="button"
                       onClick={onClose}
                       disabled={processing}
-                      className="px-4 py-2.5 rounded-lg text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors cursor-pointer border-none"
+                      className="px-4 py-2.5 rounded-none text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors cursor-pointer border border-white/10"
                     >
                       Cancel
                     </button>
@@ -346,7 +346,7 @@ export default function BlogCategoryDeleteModal({
                       type="button"
                       onClick={handleMoveArticles}
                       disabled={processing || destinationCategories.length === 0}
-                      className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-2.5 rounded-lg border-none cursor-pointer transition-colors shadow-[0_4px_15px_rgba(239,68,68,0.25)] disabled:opacity-50"
+                      className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#dc2626] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-2.5 rounded-none border border-brand-red cursor-pointer transition-colors disabled:opacity-50"
                     >
                       {processing && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                       <span>Reassign Articles & Delete Category</span>
@@ -358,7 +358,7 @@ export default function BlogCategoryDeleteModal({
               {/* OPTION 2 CONTENT: DELETE ARTICLES */}
               {activeTab === "DELETE" && (
                 <div className="space-y-4 pt-1">
-                  <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-lg text-xs text-red-300">
+                  <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-none text-xs text-red-300">
                     <p className="font-semibold mb-1">Destructive Action</p>
                     <p className="text-red-400/90 text-[11px] leading-relaxed">
                       Selected articles will be permanently removed from the database. Shared cover images on Cloudinary will be safely preserved. If all articles are deleted, the category will also be deleted.
@@ -390,17 +390,17 @@ export default function BlogCategoryDeleteModal({
                   </div>
 
                   {/* Article checklist list */}
-                  <div className="max-h-48 overflow-y-auto space-y-1.5 p-2 bg-black/50 border border-white/[0.08] rounded-lg">
+                  <div className="max-h-48 overflow-y-auto space-y-1.5 p-2 bg-black/50 border border-white/[0.08] rounded-none">
                     {articles.map((art) => {
                       const isSelected = selectedIds.has(art.id);
                       return (
                         <div
                           key={art.id}
                           onClick={() => toggleSelectArticle(art.id)}
-                          className={`flex items-center justify-between gap-3 p-2 rounded cursor-pointer transition-colors text-xs ${
+                          className={`flex items-center justify-between gap-3 p-2 rounded-none cursor-pointer transition-colors text-xs border ${
                             isSelected
-                              ? "bg-red-500/10 border border-red-500/30 text-white"
-                              : "hover:bg-white/[0.03] text-neutral-400 border border-transparent"
+                              ? "bg-red-500/10 border-red-500/30 text-white"
+                              : "hover:bg-white/[0.03] text-neutral-400 border-transparent"
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
@@ -415,12 +415,12 @@ export default function BlogCategoryDeleteModal({
                             </div>
                           </div>
                           <span
-                            className={`text-[9px] font-mono font-semibold uppercase px-2 py-0.5 rounded shrink-0 ${
+                            className={`text-[9px] font-mono font-semibold uppercase px-2 py-0.5 rounded-none shrink-0 border ${
                               art.status === "PUBLISHED"
-                                ? "bg-emerald-500/15 text-emerald-400"
+                                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
                                 : art.status === "SCHEDULED"
-                                ? "bg-amber-500/15 text-amber-400"
-                                : "bg-neutral-800 text-neutral-400"
+                                ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                                : "bg-neutral-800 text-neutral-400 border-neutral-700"
                             }`}
                           >
                             {art.status}
@@ -431,13 +431,13 @@ export default function BlogCategoryDeleteModal({
                   </div>
 
                   {/* Explicit Confirmation Checkbox */}
-                  <div className="p-3 bg-black/60 border border-white/10 rounded-lg">
+                  <div className="p-3 bg-black/60 border border-white/10 rounded-none">
                     <label className="flex items-start gap-2.5 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={confirmUnderstood}
                         onChange={(e) => setConfirmUnderstood(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 accent-brand-red cursor-pointer"
+                        className="mt-0.5 w-4 h-4 accent-brand-red rounded-none cursor-pointer"
                       />
                       <span className="text-xs text-neutral-300">
                         I understand that {selectedIds.size} article(s) will be permanently deleted and cannot be recovered.
@@ -450,7 +450,7 @@ export default function BlogCategoryDeleteModal({
                       type="button"
                       onClick={onClose}
                       disabled={processing}
-                      className="px-4 py-2.5 rounded-lg text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors cursor-pointer border-none"
+                      className="px-4 py-2.5 rounded-none text-xs font-mono font-semibold uppercase tracking-wider text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors cursor-pointer border border-white/10"
                     >
                       Cancel
                     </button>
@@ -458,7 +458,7 @@ export default function BlogCategoryDeleteModal({
                       type="button"
                       onClick={handleDeleteArticles}
                       disabled={processing || selectedIds.size === 0 || !confirmUnderstood}
-                      className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-2.5 rounded-lg border-none cursor-pointer transition-colors shadow-[0_4px_15px_rgba(220,38,38,0.35)] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-2.5 rounded-none border border-red-600 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {processing && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                       <Trash2 className="w-3.5 h-3.5" />

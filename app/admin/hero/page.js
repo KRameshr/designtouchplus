@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Save, CheckCircle2, AlertCircle, RefreshCw, Eye } from "lucide-react";
 import { adminFetch } from "@/lib/auth";
 import { getHeroContent, uploadVideo } from "@/lib/api";
@@ -77,7 +77,7 @@ export default function AdminHeroPage() {
   const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState("");
 
-  const populateForm = (data) => {
+  const populateForm = useCallback((data) => {
     if (!data) return;
     setForm({
       eyebrow: data.eyebrow || "",
@@ -97,9 +97,9 @@ export default function AdminHeroPage() {
     if (data.updatedAt) {
       setLastSaved(new Date(data.updatedAt).toLocaleString());
     }
-  };
+  }, []);
 
-  const loadHero = async () => {
+  const loadHero = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -116,11 +116,11 @@ export default function AdminHeroPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [populateForm]);
 
   useEffect(() => {
     loadHero();
-  }, []);
+  }, [loadHero]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
