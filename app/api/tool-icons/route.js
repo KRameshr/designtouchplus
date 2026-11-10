@@ -8,12 +8,12 @@ import {
   getToolMonogram,
   validateSvgContent,
 } from "@/lib/toolIcons";
+import { getApiBaseUrl } from "@/lib/apiBaseUrl";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE_URL = getApiBaseUrl();
 const MAX_ICON_SIZE_BYTES = 512 * 1024; // 512 KB
 const ALLOWED_EXTENSIONS = new Set([".svg", ".png", ".webp"]);
 const CANONICAL_FILENAMES = new Set(

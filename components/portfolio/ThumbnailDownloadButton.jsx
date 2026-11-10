@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getApiBaseUrl } from "@/lib/apiBaseUrl";
 
 export default function ThumbnailDownloadButton({ project }) {
   const [downloading, setDownloading] = useState(false);
@@ -54,10 +55,19 @@ export default function ThumbnailDownloadButton({ project }) {
 
       try {
         // 2. Secondary fallback: backend streaming proxy endpoint
-        const backendEndpoint = `/api/portfolio/${project.id || project.slug}/download-image`;
-        const testRes = await fetch(backendEndpoint, { method: "HEAD" });
-        if (testRes.ok) {
-          window.location.href = backendEndpoint;
+        const itemIdOrSlug = encodeURIComponent(project.id || project.slug);
+        const backendEndpoint = `${getApiBaseUrl()}/api/portfolio/${itemIdOrSlug}/download-image`;
+        const backendRes = await fetch(backendEndpoint, { mode: "cors" });
+        if (backendRes.ok) {
+          const blob = await backendRes.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
           return;
         }
 
