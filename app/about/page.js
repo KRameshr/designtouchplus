@@ -2,10 +2,8 @@ import AboutHero from "@/components/about/AboutHero";
 import OurStory from "@/components/about/OurStory";
 import ValuesGrid from "@/components/about/ValuesGrid";
 import TeamGrid from "@/components/about/TeamGrid";
+import { connection } from "next/server";
 import { getAboutContent, getStats, getValues, getTeam } from "@/lib/api";
-
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export const metadata = {
   title: "About Us",
@@ -14,6 +12,8 @@ export const metadata = {
 };
 
 export default async function AboutPage() {
+  await connection();
+
   const [aboutContent, stats, values, team] = await Promise.all([
     getAboutContent().catch(() => null),
     getStats().catch(() => []),

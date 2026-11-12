@@ -370,6 +370,7 @@ export default function BlogSearchBar({
 
                       <Link
                         href={`/blog/${post.slug}`}
+                        prefetch={false}
                         onMouseDown={(e) => {
                           e.preventDefault();
                           handleSelectArticle(post);

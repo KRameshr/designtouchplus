@@ -17,10 +17,6 @@ export const metadata = {
     "Video editing, motion graphics, social media content, YouTube management, graphic design, thumbnail design, and commercial video services.",
 };
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
 export default async function ServicesPage() {
   const [content, banners, services, processSteps, tools] = await Promise.all([
     getServicesPageContent().catch(() => null),

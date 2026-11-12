@@ -96,7 +96,7 @@ test("6. Background video autoplays muted, loops, and covers the hero area", () 
   assert.match(ourStory, /\/hero-demo\.mp4/, "Must provide clean demo video fallback");
 
   // Fallback poster
-  assert.match(ourStory, /poster=\{posterImage\}/, "Must set poster thumbnail on video before playback");
+  assert.match(ourStory, /poster=\{cloudinaryImageUrl\(posterImage, 1280\) \|\| posterImage\}/, "Must set an optimized poster thumbnail on video before playback");
 });
 
 test("7. Founder name and founder designation are dynamic from CMS and not hardcoded", () => {

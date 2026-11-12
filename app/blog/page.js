@@ -34,19 +34,19 @@ export default async function BlogPage({ searchParams }) {
   const query = searchParams?.q || "";
   const page = Math.max(0, Number(searchParams?.page) || 0);
 
-  const [blogHeroContent, postsPage, categoryCounts, popularPosts, allPublicPosts] = await Promise.all([
+  const [blogHeroContent, postsPage, categoryCounts, popularPosts] = await Promise.all([
     getBlogPageContent().catch(() => null),
     query
       ? searchBlogPosts(query, { category: category || undefined, page, size: 9 }).catch(() => ({ content: [], totalPages: 0, totalElements: 0, number: 0 }))
       : getBlogPosts({ category: category || undefined, page, size: 9 }).catch(() => ({ content: [], totalPages: 0, totalElements: 0, number: 0 })),
     getBlogCategoryCounts().catch(() => []),
     getPopularBlogPosts().catch(() => []),
-    getBlogPosts({ size: 50 }).catch(() => ({ content: [] })),
   ]);
 
-  // Combine and deduplicate known public articles for zero-latency instant autocomplete suggestions
+  // Use this page's results and popular posts for immediate suggestions. The
+  // debounced search request in BlogSearchBar fills in matching articles beyond
+  // this small initial set without downloading the full public catalog here.
   const initialArticles = [
-    ...(allPublicPosts?.content || []),
     ...(postsPage?.content || []),
     ...(popularPosts || []),
   ].filter(

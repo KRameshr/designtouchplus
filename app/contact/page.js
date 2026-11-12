@@ -3,6 +3,7 @@ import ContactForm from "@/components/contact/ContactForm";
 import ContactInfoCards from "@/components/contact/ContactInfoCards";
 import WorldMapSection from "@/components/contact/WorldMapSection";
 import FaqAccordion from "@/components/ui/FaqAccordion";
+import { connection } from "next/server";
 import { getCompanyInfo, getFaqs, getContactPageContent } from "@/lib/api";
 
 export const metadata = {
@@ -46,6 +47,8 @@ const FALLBACK_GENERAL_FAQS = [
 ];
 
 export default async function ContactPage() {
+  await connection();
+
   const [contactContent, companyInfo, faqs] = await Promise.all([
     getContactPageContent().catch(() => null),
     getCompanyInfo().catch(() => null),

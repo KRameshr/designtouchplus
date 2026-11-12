@@ -3,6 +3,7 @@ import FeaturedProjects from "@/components/home/FeaturedProjects";
 import Services from "@/components/home/Services";
 import TrustedClients from "@/components/home/TrustedClients";
 import ContactSection from "@/components/home/ContactSection";
+import { connection } from "next/server";
 import {
   getHeroContent,
   getFeaturedPortfolio,
@@ -14,10 +15,6 @@ import {
   getContactPageContent,
 } from "@/lib/api";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
 export const metadata = {
   title: {
     absolute: "DesignTouch+ | Creative Studio",
@@ -25,11 +22,12 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  // Fetched in parallel — they're independent, no reason to wait for one
-  // before starting the other. getCompanyInfo() is also called in
-  // app/layout.js for the Footer — Next.js automatically dedupes identical
-  // fetch() calls within the same request, so this doesn't double the
-  // network cost.
+  // Render per request, while allowing explicitly revalidated public API fetches
+  // to use the OpenNext incremental cache when a persistent cache provider exists.
+  await connection();
+
+  // These independent content reads are started together so the response does
+  // not serialize their backend round trips.
   const [
     heroContent,
     featuredVideos,

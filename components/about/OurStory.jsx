@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { motion } from "framer-motion";
+import { cloudinaryImageUrl } from "@/lib/cloudinaryImages.mjs";
 
 // High-quality cinematic production/filming studio photograph fallback
 const PRODUCTION_SHOOT_FALLBACK_IMAGE = "/assets/about/production-shoot.jpg";
@@ -51,6 +52,7 @@ function renderStoryHeading(rawHeading) {
 
 const OurStory = ({ aboutContent }) => {
   const [isMuted, setIsMuted] = useState(true);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
   const videoRef = useRef(null);
 
   // Dynamic image / video poster from CMS with realistic production-shoot fallback
@@ -61,6 +63,31 @@ const OurStory = ({ aboutContent }) => {
   // Video source: configurable from CMS, with public demo fallback if unconfigured
   const configuredVideo = aboutContent?.storyVideoUrl?.trim() || "";
   const videoSrc = configuredVideo || "/hero-demo.mp4";
+
+  // Keep the cinematic poster visible while deferring video bytes until the
+  // story section is near the viewport. Playback still starts automatically
+  // when the browser supports muted autoplay.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (typeof IntersectionObserver === "undefined") {
+      setShouldLoadVideo(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoadVideo(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" },
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [videoSrc]);
 
   // Default story paragraphs matching client specification
   const defaultParagraph1 =
@@ -95,13 +122,13 @@ const OurStory = ({ aboutContent }) => {
       {videoSrc ? (
         <video
           ref={videoRef}
-          src={videoSrc}
-          poster={posterImage}
+          src={shouldLoadVideo ? videoSrc : undefined}
+          poster={cloudinaryImageUrl(posterImage, 1280) || posterImage}
           autoPlay
           muted={isMuted}
           loop
           playsInline
-          preload="auto"
+          preload={shouldLoadVideo ? "metadata" : "none"}
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0"
         />
@@ -109,7 +136,7 @@ const OurStory = ({ aboutContent }) => {
         /* High-quality studio photograph fallback */
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={posterImage}
+          src={cloudinaryImageUrl(posterImage, 1280) || posterImage}
           alt="DesignTouch+ Studio Production Shoot"
           className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0"
           loading="lazy"

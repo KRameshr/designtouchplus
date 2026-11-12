@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
+import { cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 const RelatedPosts = ({ posts = [] }) => {
   if (posts.length === 0) return null;
@@ -18,14 +19,17 @@ const RelatedPosts = ({ posts = [] }) => {
           <Link
             key={post.id}
             href={`/blog/${post.slug}`}
+            prefetch={false}
             className="group flex flex-col bg-[#0d0d0d] border border-white/[0.08] hover:border-white/20 rounded-none overflow-hidden no-underline transition-all duration-300 hover:bg-[#121212] hover:-translate-y-0.5"
           >
             <div className="relative aspect-video bg-[#141414] overflow-hidden">
               {post.coverImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={post.coverImageUrl}
+                  {...cloudinaryResponsiveImageProps(post.coverImageUrl, { widths: [320, 480, 640], sizes: "(min-width: 1024px) 33vw, 100vw", fallbackWidth: 480 })}
                   alt={post.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
                 />
               ) : (

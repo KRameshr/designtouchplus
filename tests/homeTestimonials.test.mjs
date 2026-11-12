@@ -276,19 +276,19 @@ test("9. Visual Style uses deep black background, charcoal card background, subt
   );
 });
 
-test("10. Public API getTestimonials and getClients disable caching to immediately reflect Admin CMS updates", () => {
+test("10. Public testimonial and client CMS reads use a bounded five-minute cache", () => {
   const apiContent = readSource("lib/api.js");
 
   assert.match(
     apiContent,
-    /export const getTestimonials\s*=\s*\(\)\s*=>\s*apiFetch\(["']\/api\/testimonials["'],\s*\{\s*cache:\s*["']no-store["']\s*\}\)/,
-    "getTestimonials must use cache: 'no-store' for instant updates",
+    /export const getTestimonials\s*=\s*\(\)\s*=>\s*apiFetch\(["']\/api\/testimonials["'],\s*\{\s*revalidate:\s*300\s*\}\)/,
+    "getTestimonials must use a bounded 300-second revalidation interval",
   );
 
   assert.match(
     apiContent,
-    /export const getClients\s*=\s*\(\)\s*=>\s*apiFetch\(["']\/api\/clients["'],\s*\{\s*cache:\s*["']no-store["']\s*\}\)/,
-    "getClients must use cache: 'no-store' for instant updates",
+    /export const getClients\s*=\s*\(\)\s*=>\s*apiFetch\(["']\/api\/clients["'],\s*\{\s*revalidate:\s*300\s*\}\)/,
+    "getClients must use a bounded 300-second revalidation interval",
   );
 });
 
@@ -474,8 +474,8 @@ test("14. ClientLogoCard renders uploaded logo centered and displays actual dyna
   // Logo centered with object-contain
   assert.match(
     componentContent,
-    /<img[\s\S]*?src=\{client\.logoUrl\}[\s\S]*?object-contain/,
-    "Client card must render logo with object-contain",
+    /<img[\s\S]*?\{\.\.\.cloudinaryResponsiveImageProps\(client\.logoUrl,[\s\S]*?\)\}[\s\S]*?object-contain/,
+    "Client card must render a responsive logo with object-contain",
   );
 
   // Client name directly below logo

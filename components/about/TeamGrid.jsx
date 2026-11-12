@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { User, Linkedin, Instagram } from "lucide-react";
 import { isValidSocialUrl, getSafeSocialHref } from "@/lib/socialUtils";
+import { cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 // Re-export for convenience and compatibility
 export { isValidSocialUrl, getSafeSocialHref };
@@ -74,7 +75,7 @@ function TeamMemberItem({ member }) {
         {hasPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={rawPhoto}
+            {...cloudinaryResponsiveImageProps(rawPhoto, { widths: [240, 320, 480, 640], sizes: "(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw", fallbackWidth: 480 })}
             alt={member.name || "DesignTouch+ Team Member"}
             className="w-full h-full object-cover grayscale contrast-[1.05] transition-all duration-300 group-hover:scale-[1.02] group-hover:contrast-110"
             onError={() => setImgError(true)}

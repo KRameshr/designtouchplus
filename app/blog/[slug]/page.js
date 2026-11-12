@@ -5,6 +5,7 @@ import ReadingProgressBar from "@/components/blog/ReadingProgressBar";
 import RelatedPosts from "@/components/blog/RelatedPosts";
 import BlogContentRenderer from "@/components/blog/BlogContentRenderer";
 import { getBlogPostBySlug, getBlogPosts } from "@/lib/api";
+import { cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 const CATEGORY_LABELS = {
   VIDEO_EDITING: "Video Editing",
@@ -140,8 +141,11 @@ export default async function BlogDetailPage({ params }) {
             <div className="relative aspect-[16/9] md:aspect-[21/10] max-h-[520px] rounded-none overflow-hidden border border-white/10 bg-[#0d0d0d] mb-8 sm:mb-12 shadow-2xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={post.coverImageUrl}
+                {...cloudinaryResponsiveImageProps(post.coverImageUrl, { widths: [480, 640, 960, 1280, 1600], sizes: "(min-width: 1024px) 896px, 100vw", fallbackWidth: 960 })}
                 alt={post.title}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>

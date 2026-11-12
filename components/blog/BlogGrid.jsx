@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Calendar, ArrowRight, BookOpen, Clock } from "lucide-react";
+import { cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 const CATEGORY_LABELS = {
   THUMBNAIL: "Thumbnail",
@@ -54,6 +55,7 @@ const BlogGrid = ({ posts = [], activeCategory = "", searchQuery = "" }) => {
         >
           <Link
             href={`/blog/${post.slug}`}
+            prefetch={false}
             className="flex flex-col flex-1 no-underline text-inherit"
           >
             {/* Thumbnail Image / Fallback Container — Sharp Rectangular Edges */}
@@ -61,8 +63,10 @@ const BlogGrid = ({ posts = [], activeCategory = "", searchQuery = "" }) => {
               {post.coverImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={post.coverImageUrl}
+                  {...cloudinaryResponsiveImageProps(post.coverImageUrl, { widths: [320, 480, 640, 960], sizes: "(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw", fallbackWidth: 640 })}
                   alt={post.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500 ease-out"
                 />
               ) : (

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowDown } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { getBlogPageContent } from "@/lib/api";
+import { cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 const DEFAULT_CONTENT = {
   heroEyebrow: "OUR BLOG",
@@ -31,21 +31,6 @@ export default function BlogHero({ content: initialContent = null }) {
     }
   }, [initialContent]);
 
-  // Live client-side refresh to ensure immediate sync on tab focus or after CMS edit
-  useEffect(() => {
-    let active = true;
-    getBlogPageContent()
-      .then((fresh) => {
-        if (active && fresh) {
-          setContent(fresh);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
-
   const eyebrow = content?.heroEyebrow || DEFAULT_CONTENT.heroEyebrow;
   const line1 = content?.heroHeadlineLine1 || DEFAULT_CONTENT.heroHeadlineLine1;
   const line2 = content?.heroHeadlineLine2 || DEFAULT_CONTENT.heroHeadlineLine2;
@@ -70,7 +55,7 @@ export default function BlogHero({ content: initialContent = null }) {
         {bannerUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={bannerUrl}
+            {...cloudinaryResponsiveImageProps(bannerUrl, { widths: [480, 640, 960, 1280, 1600, 1920], sizes: "100vw", fallbackWidth: 1280 })}
             alt={bannerAlt}
             className="w-full h-full object-cover select-none pointer-events-none"
             style={{ objectPosition: objectPosition || "center right" }}

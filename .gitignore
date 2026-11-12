@@ -20,6 +20,9 @@ npm-debug.log*
 # OpenNext
 .open-next
 
+# Local Lighthouse audit outputs
+/reports/lighthouse/
+
 # wrangler files
 .wrangler
 .dev.vars*

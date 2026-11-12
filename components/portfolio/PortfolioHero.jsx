@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { cloudinaryImageUrl, cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 export default function PortfolioHero({
   stats = [],
@@ -62,12 +63,12 @@ export default function PortfolioHero({
               <video
                 ref={videoRef}
                 src={activeVideoUrl}
-                poster={activePoster || undefined}
+                poster={cloudinaryImageUrl(activePoster, 1440) || activePoster || undefined}
                 autoPlay
                 muted
                 loop
                 playsInline
-                preload="auto"
+                preload="metadata"
                 onError={() => setVideoError(true)}
                 className="w-full h-full object-cover select-none pointer-events-none"
                 style={{ objectPosition: "center center" }}
@@ -75,10 +76,13 @@ export default function PortfolioHero({
             ) : activePoster ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={activePoster}
+                {...cloudinaryResponsiveImageProps(activePoster, { widths: [480, 640, 960, 1280, 1600], sizes: "(min-width: 1440px) 1320px, calc(100vw - 32px)", fallbackWidth: 1280 })}
                 alt={featuredProject?.title || "Portfolio Showcase Reel"}
                 className="w-full h-full object-cover select-none pointer-events-none"
                 style={{ objectPosition: "center center" }}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-[#0d0d0d]">

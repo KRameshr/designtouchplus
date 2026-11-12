@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { PlayCircle, Users, Calendar, Globe } from "lucide-react";
+import { cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 // Existing studio workspace photo from BlogHero / Cloudinary for fallback when no banner is uploaded
 const EXISTING_STUDIO_FALLBACK_IMAGE =
@@ -255,7 +256,7 @@ const AboutHero = ({ aboutContent, stats = [] }) => {
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={bannerUrl}
+            {...cloudinaryResponsiveImageProps(bannerUrl, { widths: [480, 640, 960, 1280, 1600, 1920], sizes: "100vw", fallbackWidth: 1280 })}
             alt={aboutContent?.heading || "DesignTouch+ Creative Production Studio"}
             className="w-full h-full object-cover object-center sm:object-[center_right] select-none pointer-events-none"
             loading="eager"

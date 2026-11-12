@@ -67,6 +67,7 @@ export default function Navbar() {
           {/* Brand Logo Asset — Official DesignTouch+ Brand Logo */}
           <Link
             href="/"
+            prefetch={false}
             className="relative flex items-center select-none group py-1"
             aria-label="DesignTouch+ Home"
           >
@@ -88,6 +89,7 @@ export default function Navbar() {
                 <Link
                   key={path}
                   href={path}
+                  prefetch={false}
                   className={`relative h-full flex items-center text-xs font-bold uppercase tracking-[0.16em] no-underline font-display transition-colors duration-150 ${
                     active
                       ? "text-white"
@@ -193,6 +195,7 @@ export default function Navbar() {
                 <div className="flex items-center justify-between pb-6 border-b border-white/[0.08]">
                   <Link
                     href="/"
+                    prefetch={false}
                     onClick={() => setIsOpen(false)}
                     className="relative flex items-center select-none"
                     aria-label="DesignTouch+ Home"
@@ -238,6 +241,7 @@ export default function Navbar() {
                       <Link
                         key={path}
                         href={path}
+                        prefetch={false}
                         onClick={() => setIsOpen(false)}
                         className={`flex items-center justify-between py-3.5 no-underline font-display transition-colors duration-150 ${
                           active

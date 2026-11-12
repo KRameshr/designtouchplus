@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 const THUMBNAIL_PAGE_SIZE = 9;
 
@@ -189,8 +190,10 @@ export default function ThumbnailGrid({ items = [], categories = [] }) {
                     {imageSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={imageSrc}
+                        {...cloudinaryResponsiveImageProps(imageSrc, { widths: [320, 480, 640, 960], sizes: "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw", fallbackWidth: 640 })}
                         alt={item.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-t-[1px]"
                       />
                     ) : (

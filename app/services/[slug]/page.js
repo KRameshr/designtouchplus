@@ -13,10 +13,6 @@ import {
   resolveServiceTheme,
 } from "@/lib/serviceIcons";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
 async function resolveServiceDetail(slug) {
   const cleanSlug = decodeURIComponent(String(slug || "")).trim().toLowerCase();
   if (!cleanSlug) return null;

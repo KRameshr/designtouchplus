@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Send, CheckCircle2, AlertCircle, Search } from "lucide-react";
 import { subscribeToNewsletter } from "@/lib/api";
+import { cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 const CATEGORY_LABELS = {
   THUMBNAIL: "Thumbnail",
@@ -169,6 +170,7 @@ const BlogSidebar = ({
               <Link
                 key={post.id}
                 href={`/blog/${post.slug}`}
+                prefetch={false}
                 className="group flex gap-3.5 py-3.5 first:pt-0 last:pb-0 no-underline text-inherit"
               >
                 {/* Thumbnail / Index — Sharp Square */}
@@ -176,8 +178,10 @@ const BlogSidebar = ({
                   {post.coverImageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={post.coverImageUrl}
+                      {...cloudinaryResponsiveImageProps(post.coverImageUrl, { widths: [160, 240, 320, 480], sizes: "(min-width: 1280px) 280px, 100vw", fallbackWidth: 320 })}
                       alt={post.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (

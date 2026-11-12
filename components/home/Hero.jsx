@@ -81,7 +81,7 @@ export default function Hero({ hero, ...directProps }) {
               muted
               loop
               playsInline
-              preload="auto"
+              preload="metadata"
               className="w-full h-full object-cover select-none pointer-events-none"
               style={{ objectPosition: "center 35%" }}
             >

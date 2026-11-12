@@ -2,6 +2,7 @@ import PortfolioHero from "@/components/portfolio/PortfolioHero";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
 import ThumbnailGrid from "@/components/portfolio/ThumbnailGrid";
 import PortfolioCta from "@/components/portfolio/PortfolioCta";
+import { connection } from "next/server";
 import {
   getStats,
   getPortfolio,
@@ -17,9 +18,9 @@ export const metadata = {
     "Explore our latest video editing, motion graphics, and thumbnail design projects.",
 };
 
-export const revalidate = 0;
-
 export default async function PortfolioPage() {
+  await connection();
+
   const [
     introContent,
     tags,

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Quote, Star } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 const ClientLogoCard = ({ client }) => {
   const [logoError, setLogoError] = useState(false);
@@ -29,8 +30,10 @@ const ClientLogoCard = ({ client }) => {
         {hasLogo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={client.logoUrl}
+            {...cloudinaryResponsiveImageProps(client.logoUrl, { widths: [160, 240, 320, 480], sizes: "250px", fallbackWidth: 320 })}
             alt={client.clientName || "Client logo"}
+            loading="lazy"
+            decoding="async"
             onError={() => setLogoError(true)}
             className="max-h-8 sm:max-h-10 max-w-[75%] object-contain transition-transform duration-300 group-hover:scale-105"
           />
@@ -102,8 +105,10 @@ const TestimonialCard = ({ testimonial, index = 0 }) => {
             {testimonial.authorAvatarUrl && !imageError ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={testimonial.authorAvatarUrl}
+                {...cloudinaryResponsiveImageProps(testimonial.authorAvatarUrl, { widths: [64, 96, 128, 192], sizes: "96px", fallbackWidth: 128 })}
                 alt={authorName}
+                loading="lazy"
+                decoding="async"
                 onError={() => setImageError(true)}
                 className="w-full h-full object-cover object-center"
               />

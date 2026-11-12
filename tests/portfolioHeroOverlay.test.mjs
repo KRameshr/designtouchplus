@@ -147,7 +147,7 @@ test("4. PortfolioHero maintains video autoplay, loop, mute, inline playback, an
   // Poster and error fallback preserved
   assert.match(
     content,
-    /poster=\{activePoster \|\| undefined\}/,
+    /poster=\{cloudinaryImageUrl\(activePoster, 1440\) \|\| activePoster \|\| undefined\}/,
     "Video should use activePoster as fallback poster image"
   );
   assert.match(

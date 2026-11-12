@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
+import { cloudinaryImageUrl, cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 const REFERENCE_TABS = [
   { value: "ALL", slug: "all", label: "ALL WORK" },
@@ -305,11 +306,11 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
                           if (el) videoRefs.current[project.id] = el;
                         }}
                         src={project.videoUrl}
-                        poster={mediaSrc || undefined}
+                        poster={cloudinaryImageUrl(mediaSrc, 960) || mediaSrc || undefined}
                         playsInline
                         muted
                         loop
-                        preload="metadata"
+                        preload="none"
                         onError={() =>
                           setVideoErrors((prev) => ({ ...prev, [project.id]: true }))
                         }
@@ -318,8 +319,10 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
                     ) : mediaSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={mediaSrc}
+                        {...cloudinaryResponsiveImageProps(mediaSrc, { widths: [320, 480, 640, 960], sizes: "(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw", fallbackWidth: 640 })}
                         alt={project.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover select-none group-hover:scale-105 transition-transform duration-500 ease-out motion-reduce:transition-none motion-reduce:transform-none"
                       />
                     ) : (

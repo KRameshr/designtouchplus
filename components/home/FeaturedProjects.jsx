@@ -2,6 +2,7 @@
 
 import { useState, useRef, useMemo } from "react";
 import Link from "next/link";
+import { cloudinaryImageUrl, cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 /* =========================================================================
    SECTION A: FEATURED VIDEO EDITING (CINEMATIC 3 × 2 GALLERY)
@@ -108,11 +109,11 @@ function FeaturedVideoSection({ videos = [] }) {
                         else delete videoRefs.current[projectId];
                       }}
                       src={project.videoUrl}
-                      poster={mediaSrc && !hasImageError ? mediaSrc : undefined}
+                      poster={mediaSrc && !hasImageError ? (cloudinaryImageUrl(mediaSrc, 960) || mediaSrc) : undefined}
                       playsInline
                       muted
                       loop
-                      preload="metadata"
+                      preload="none"
                       onError={() => setVideoErrors((current) => ({ ...current, [projectId]: true }))}
                       className="featured-video-video h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                       aria-label={`Preview of ${project.title}`}
@@ -120,8 +121,10 @@ function FeaturedVideoSection({ videos = [] }) {
                   ) : mediaSrc && !hasImageError ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={mediaSrc}
+                      {...cloudinaryResponsiveImageProps(mediaSrc, { widths: [320, 480, 640, 960], sizes: "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw", fallbackWidth: 640 })}
                       alt={project.title}
+                      loading="lazy"
+                      decoding="async"
                       onError={() => setImageErrors((current) => ({ ...current, [projectId]: true }))}
                       className="featured-video-image h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                     />
@@ -250,8 +253,10 @@ function FeaturedThumbnailSection({ thumbnails = [] }) {
                   {mediaSrc && !hasImageError ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={mediaSrc}
+                      {...cloudinaryResponsiveImageProps(mediaSrc, { widths: [320, 480, 640, 960], sizes: "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw", fallbackWidth: 640 })}
                       alt={item.title || "Featured thumbnail design"}
+                      loading="lazy"
+                      decoding="async"
                       onError={() => setImageErrors((prev) => ({ ...prev, [key]: true }))}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.025]"
                     />
