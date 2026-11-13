@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ArrowRight, X } from "lucide-react";
 import { subscribeToNewsletter, getContactPageContent } from "@/lib/api";
+import { FOOTER_SERVICES } from "@/lib/siteNavigation";
 import {
   parseSocialLinks,
   getSocialPlatformIcon,
@@ -32,15 +33,6 @@ const QUICK_LINKS = [
   { name: "Pricing", path: "/pricing" },
   { name: "Blog", path: "/blog" },
   { name: "Contact", path: "/contact" },
-];
-
-const SERVICES = [
-  { name: "Video Editing", path: "/services/video-editing" },
-  { name: "Motion Graphics", path: "/services/motion-graphics" },
-  { name: "Content Creation", path: "/services/social-media-content" },
-  { name: "Brand Films", path: "/services/commercial-ads" },
-  { name: "Thumbnail Design", path: "/services/thumbnail-design" },
-  { name: "YouTube Content", path: "/services/youtube-management" },
 ];
 
 /**
@@ -409,7 +401,7 @@ const Footer = ({ companyInfo, contactContent: initialContactContent }) => {
               Our Services
             </h4>
             <ul className="flex flex-col gap-3 list-none p-0 m-0 font-sans">
-              {SERVICES.map(({ name, path }) => (
+              {FOOTER_SERVICES.map(({ name, path }) => (
                 <li key={path}>
                   <Link
                     href={path}

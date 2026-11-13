@@ -3,25 +3,26 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Clapperboard, Clock3, Headset, RefreshCw } from "lucide-react";
 
 const CREDENTIALS = [
-  { index: "01", label: "Fast Delivery", desc: "On-time turnaround, every time." },
-  { index: "02", label: "Cinema Quality", desc: "Top-tier color, sound & edit." },
-  { index: "03", label: "Unlimited Revisions", desc: "Polished to exact perfection." },
-  { index: "04", label: "Dedicated Support", desc: "Direct creator communication." },
+  { label: "Fast Delivery", desc: "On-time, every time.", Icon: Clock3 },
+  { label: "Cinema Quality", desc: "Pro-level edits & visuals.", Icon: Clapperboard },
+  { label: "Unlimited Revisions", desc: "Until you're satisfied.", Icon: RefreshCw },
+  { label: "Dedicated Support", desc: "Direct & clear communication.", Icon: Headset },
 ];
 
 const DEFAULT_HERO = {
-  eyebrow: "Welcome to DesignTouch+",
-  headlineLine1: "We create",
-  headlineLine2: "videos that",
-  headlineLine3: "grow",
-  headlineHighlight: "brands.",
+  eyebrow: "CREATIVE VIDEO & CONTENT STUDIO",
+  headlineLine1: "WE CREATE",
+  headlineLine2: "VIDEOS THAT",
+  headlineLine3: "GROW",
+  headlineHighlight: "BRANDS.",
   subheading:
-    "We help businesses and creators tell their stories through powerful video editing & creative content.",
-  primaryCtaText: "View Portfolio",
+    "Helping businesses and creators tell powerful stories through professional video editing & creative content.",
+  primaryCtaText: "VIEW PORTFOLIO",
   primaryCtaLink: "/portfolio",
-  secondaryCtaText: "Book a Call",
+  secondaryCtaText: "BOOK A CALL",
   secondaryCtaLink: "/contact",
   videoUrl: "/hero-demo.mp4",
   badgeText: "REEL // 2026",
@@ -32,15 +33,8 @@ export default function Hero({ hero, ...directProps }) {
   const [isMounted, setIsMounted] = useState(false);
   const videoRef = useRef(null);
 
-  const eyebrow = hero?.eyebrow ?? directProps.eyebrow ?? DEFAULT_HERO.eyebrow;
-  const headlineLine1 = hero?.headlineLine1 ?? directProps.headlineLine1 ?? DEFAULT_HERO.headlineLine1;
-  const headlineLine2 = hero?.headlineLine2 ?? directProps.headlineLine2 ?? DEFAULT_HERO.headlineLine2;
-  const headlineLine3 = hero?.headlineLine3 ?? directProps.headlineLine3 ?? DEFAULT_HERO.headlineLine3;
-  const headlineHighlight = hero?.headlineHighlight ?? directProps.headlineHighlight ?? DEFAULT_HERO.headlineHighlight;
-  const subheading = hero?.subheading ?? directProps.subheading ?? DEFAULT_HERO.subheading;
-  const primaryCtaText = hero?.primaryCtaText ?? directProps.primaryCtaText ?? DEFAULT_HERO.primaryCtaText;
+  const { eyebrow, headlineLine1, headlineLine2, headlineLine3, headlineHighlight, subheading, primaryCtaText, secondaryCtaText } = DEFAULT_HERO;
   const primaryCtaLink = hero?.primaryCtaLink ?? directProps.primaryCtaLink ?? DEFAULT_HERO.primaryCtaLink;
-  const secondaryCtaText = hero?.secondaryCtaText ?? directProps.secondaryCtaText ?? DEFAULT_HERO.secondaryCtaText;
   const secondaryCtaLink = hero?.secondaryCtaLink ?? directProps.secondaryCtaLink ?? DEFAULT_HERO.secondaryCtaLink;
   const videoUrl = hero?.videoUrl ?? directProps.videoUrl ?? DEFAULT_HERO.videoUrl;
   const badgeText = hero?.badgeText ?? directProps.badgeText ?? DEFAULT_HERO.badgeText;
@@ -146,7 +140,7 @@ export default function Hero({ hero, ...directProps }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="max-w-xl lg:max-w-2xl xl:max-w-[680px]"
+            className="max-w-xl lg:max-w-2xl xl:max-w-[720px]"
           >
             {/* Eyebrow / Agency Marker */}
             {eyebrow && (
@@ -155,39 +149,37 @@ export default function Hero({ hero, ...directProps }) {
                   className="w-2 h-2 bg-brand-red rounded-none inline-block shrink-0"
                   aria-hidden="true"
                 />
-                <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.22em] text-neutral-300">
+                <span className="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.18em] sm:tracking-[0.22em] text-neutral-300">
                   {eyebrow}
                 </span>
               </div>
             )}
 
             {/* Editorial Display Headline */}
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[52px] xl:text-[64px] font-extrabold uppercase leading-[0.98] tracking-[-0.035em] text-white mb-6 sm:mb-8">
+            <h1 className="font-display text-[clamp(2rem,8.8vw,5.5rem)] sm:text-[clamp(3.25rem,5.2vw,5.5rem)] font-extrabold uppercase leading-[0.92] tracking-[-0.045em] text-white mb-6 sm:mb-8">
               {headlineLine1 && <span className="block">{headlineLine1}</span>}
               {headlineLine2 && <span className="block">{headlineLine2}</span>}
               {(headlineLine3 || headlineHighlight) && (
-                <span className="block">
+                <span className="block whitespace-nowrap text-brand-red">
                   {headlineLine3 ? `${headlineLine3} ` : ""}
-                  {headlineHighlight ? (
-                    <span className="text-brand-red">{headlineHighlight}</span>
-                  ) : null}
+                  {headlineHighlight || null}
                 </span>
               )}
             </h1>
 
             {/* Supporting Copy */}
             {subheading && (
-              <p className="text-neutral-300 text-base sm:text-lg max-w-xl leading-relaxed mb-8 sm:mb-10 font-normal drop-shadow-sm">
+              <p className="text-neutral-300 text-base sm:text-lg max-w-[38rem] leading-relaxed mb-8 sm:mb-10 font-normal">
                 {subheading}
               </p>
             )}
 
             {/* Editorial Action Buttons (Sharp Square Geometry, No Rounded Pills) */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               {primaryCtaText && (
                 <Link
                   href={primaryCtaLink || "/portfolio"}
-                  className="inline-flex items-center justify-center gap-2.5 bg-brand-red text-white text-xs font-bold uppercase tracking-[0.16em] font-display px-7 py-4 rounded-none border border-brand-red hover:bg-[#dc2626] transition-colors duration-150 no-underline"
+                  className="inline-flex min-h-14 items-center justify-center gap-2.5 bg-brand-red text-white text-xs font-bold uppercase tracking-[0.14em] sm:tracking-[0.16em] font-display px-5 sm:px-7 py-4 rounded-none border border-brand-red hover:bg-[#dc2626] transition-colors duration-150 no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   <span>{primaryCtaText}</span>
                   <svg
@@ -200,7 +192,7 @@ export default function Hero({ hero, ...directProps }) {
                     aria-hidden="true"
                   >
                     <path
-                      d="M2 6H10M10 6L6.5 2.5M10 6L6.5 9.5"
+                      d="M3 9L9 3M4 3H9V8"
                       stroke="currentColor"
                       strokeWidth="1.75"
                       strokeLinecap="square"
@@ -213,7 +205,7 @@ export default function Hero({ hero, ...directProps }) {
               {secondaryCtaText && (
                 <Link
                   href={secondaryCtaLink || "/contact"}
-                  className="inline-flex items-center justify-center gap-2.5 border border-white/20 hover:border-white hover:bg-white hover:text-black text-white text-xs font-bold uppercase tracking-[0.16em] font-display px-7 py-4 rounded-none transition-colors duration-150 no-underline"
+                  className="inline-flex min-h-14 items-center justify-center gap-2.5 border border-white/20 hover:border-white hover:bg-white hover:text-black text-white text-xs font-bold uppercase tracking-[0.14em] sm:tracking-[0.16em] font-display px-5 sm:px-7 py-4 rounded-none transition-colors duration-150 no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   <span>{secondaryCtaText}</span>
                 </Link>
@@ -225,21 +217,25 @@ export default function Hero({ hero, ...directProps }) {
 
       {/* Credentials / Capability Strip (Neo-Brutalist Typographic Index) */}
       <div className="border-t border-b border-white/[0.08] bg-[#080808]">
-        <div className="max-w-7xl mx-auto px-6 py-8 sm:py-10 lg:py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {CREDENTIALS.map(({ index, label, desc }) => (
+        <div className="max-w-7xl mx-auto px-6 py-6 sm:py-8 lg:py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0">
+          {CREDENTIALS.map(({ label, desc, Icon }, index) => (
             <div
               key={label}
-              className="flex flex-col gap-1 border-l border-white/[0.08] pl-4 sm:pl-5"
+              className={`flex min-h-[112px] items-center gap-4 border-t border-white/[0.08] py-5 sm:px-5 lg:border-t-0 lg:py-3 ${
+                index === 0 ? "sm:border-t-0 lg:pl-0" : "lg:border-l"
+              } ${index % 2 === 0 ? "sm:border-r sm:border-r-white/[0.08] lg:border-r-0" : ""}`}
             >
-              <span className="text-[11px] font-mono tracking-widest text-brand-red font-semibold">
-                [{index}]
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-brand-red/30 text-brand-red" aria-hidden="true">
+                <Icon size={18} strokeWidth={1.7} />
               </span>
-              <h3 className="text-white text-xs font-bold uppercase tracking-wider font-display mt-0.5">
-                {label}
-              </h3>
-              <p className="text-neutral-400 text-xs leading-normal">
-                {desc}
-              </p>
+              <div className="min-w-0">
+                <h3 className="text-white text-xs sm:text-sm font-bold uppercase tracking-wider font-display">
+                  {label}
+                </h3>
+                <p className="mt-1 text-neutral-400 text-xs sm:text-[13px] leading-relaxed">
+                  {desc}
+                </p>
+              </div>
             </div>
           ))}
         </div>

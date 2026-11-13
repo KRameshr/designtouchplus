@@ -47,7 +47,8 @@ test("primary page routes expose branded loading boundaries", () => {
 
 test("primary navigation does not eagerly prefetch all dynamic pages", () => {
   const navbar = read("components/layout/Navbar.jsx");
-  assert.equal((navbar.match(/prefetch=\{false\}/g) || []).length, 4);
+  // The desktop and mobile Services disclosures add explicit overview/detail links.
+  assert.equal((navbar.match(/prefetch=\{false\}/g) || []).length, 8);
 
   for (const file of [
     "components/blog/BlogGrid.jsx",

@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 const FRONTEND_ROOT = path.resolve(__dirname, "..");
 const FOOTER_PATH = path.join(FRONTEND_ROOT, "components", "layout", "Footer.jsx");
 const NAVBAR_PATH = path.join(FRONTEND_ROOT, "components", "layout", "Navbar.jsx");
+const NAVIGATION_PATH = path.join(FRONTEND_ROOT, "lib", "siteNavigation.js");
 const GLOBALS_PATH = path.join(FRONTEND_ROOT, "app", "globals.css");
 
 test("Footer source exists and is readable", () => {
@@ -90,6 +91,8 @@ test("Footer Quick Links section has all 7 required navigation links", () => {
 
 test("Footer Our Services section has all 6 required service links to valid routes", () => {
   const content = fs.readFileSync(FOOTER_PATH, "utf8");
+  const navbarContent = fs.readFileSync(NAVBAR_PATH, "utf8");
+  const navigationContent = fs.readFileSync(NAVIGATION_PATH, "utf8");
 
   const expectedServices = [
     { name: "Video Editing", path: "/services/video-editing" },
@@ -102,10 +105,18 @@ test("Footer Our Services section has all 6 required service links to valid rout
 
   for (const svc of expectedServices) {
     assert.ok(
-      content.includes(`name: "${svc.name}", path: "${svc.path}"`),
+      navigationContent.includes(`name: "${svc.name}", path: "${svc.path}"`),
       `Our Services must include ${svc.name} -> ${svc.path}`
     );
   }
+
+  assert.match(content, /import \{ FOOTER_SERVICES \} from "@\/lib\/siteNavigation"/);
+  assert.match(content, /FOOTER_SERVICES\.map/);
+  assert.match(navbarContent, /import \{ FOOTER_SERVICES \} from "@\/lib\/siteNavigation"/);
+  assert.match(navbarContent, /FOOTER_SERVICES\.map/);
+  assert.match(navbarContent, /aria-controls="desktop-services-menu"/);
+  assert.match(navbarContent, /aria-controls="mobile-services-menu"/);
+  assert.match(navbarContent, /onMouseEnter=\{\(\) => setIsServicesOpen\(true\)\}/);
 });
 
 test("Footer Newsletter section implements aligned horizontal form, border-radius 0px, #111111 bg, #F04444 button, and API integration", () => {

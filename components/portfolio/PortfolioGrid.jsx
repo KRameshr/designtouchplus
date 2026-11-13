@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import { cloudinaryImageUrl, cloudinaryResponsiveImageProps } from "@/lib/cloudinaryImages.mjs";
 
 const REFERENCE_TABS = [
-  { value: "ALL", slug: "all", label: "ALL WORK" },
-  { value: "new-batch", slug: "new-batch", label: "NEW BATCH" },
-  { value: "corporate", slug: "corporate", label: "CORPORATE" },
-  { value: "youtube", slug: "youtube", label: "YOUTUBE" },
-  { value: "instagram-reels", slug: "instagram-reels", label: "INSTAGRAM REELS" },
-  { value: "commercial", slug: "commercial", label: "COMMERCIAL" },
-  { value: "motion-graphics", slug: "motion-graphics", label: "MOTION GRAPHICS" },
-  { value: "real-estate", slug: "real-estate", label: "REAL ESTATE" },
-  { value: "dynamic-batch", slug: "dynamic-batch", label: "DYNAMIC BATCH" },
+  { value: "ALL", slug: "all", label: "All Work" },
+  { value: "brand-films", slug: "brand-films", aliases: ["brand-film"], label: "Brand Films" },
+  { value: "commercial", slug: "commercial", aliases: ["commercials"], label: "Commercials" },
+  { value: "youtube", slug: "youtube", label: "YouTube" },
+  { value: "instagram-reels", slug: "instagram-reels", aliases: ["reels-shorts", "shorts"], label: "Reels & Shorts" },
+  { value: "motion-graphics", slug: "motion-graphics", label: "Motion Graphics" },
 ];
 
 const VIDEO_PAGE_SIZE = 9;
@@ -23,6 +20,9 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
   const [sortLatest, setSortLatest] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeMediaId, setActiveMediaId] = useState(null);
+  const [hoveredMediaId, setHoveredMediaId] = useState(null);
+  const [focusedMediaId, setFocusedMediaId] = useState(null);
+  const [touchMediaId, setTouchMediaId] = useState(null);
   const [videoErrors, setVideoErrors] = useState({});
   const videoRefs = useRef({});
 
@@ -43,9 +43,10 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
             const slug = (c.slug || "").toLowerCase();
             const name = (c.name || "").toLowerCase();
             return (
-              slug === refTab.slug ||
+              [refTab.slug, ...(refTab.aliases || [])].includes(slug) ||
               name === refTab.label.toLowerCase() ||
-              slug === refTab.value.toLowerCase()
+              slug === refTab.value.toLowerCase() ||
+              (refTab.value === "commercial" && name === "commercial")
             );
           })
         : null;
@@ -108,7 +109,8 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
         }
 
         if (item.categoryId && activeTab.id && item.categoryId === activeTab.id) return true;
-        if (item.categorySlug && activeTab.slug && item.categorySlug === activeTab.slug) return true;
+        const activeSlugs = [activeTab.slug, ...(activeTab.aliases || [])].filter(Boolean);
+        if (item.categorySlug && activeSlugs.includes(item.categorySlug)) return true;
         if (item.categorySlug && item.categorySlug === activeCategory) return true;
         if (item.categoryId && item.categoryId === activeCategory) return true;
         if (
@@ -119,11 +121,11 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
           return true;
         if (item.category) {
           const enumSlug = item.category.toLowerCase().replace(/_/g, "-");
-          if (enumSlug === activeTab.slug) return true;
+          if (activeSlugs.includes(enumSlug)) return true;
         }
         if (item.subCategory && activeTab.slug) {
           const subSlug = item.subCategory.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-          if (subSlug.includes(activeTab.slug) || activeTab.slug.includes(subSlug)) return true;
+          if (activeSlugs.some((slug) => subSlug.includes(slug) || slug.includes(subSlug))) return true;
         }
         return false;
       });
@@ -168,50 +170,65 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
       ? "SHOWING 0 OF 0 PROJECTS"
       : `SHOWING ${startIndex + 1} - ${endIndex} OF ${totalProjects} PROJECTS`;
 
-  const handleMouseEnter = (projectId) => {
-    const project = paginatedProjects.find((p) => p.id === projectId);
-    if (!project?.videoUrl || videoErrors[projectId]) return;
+  const togglePlayback = (projectId) => {
+    const video = videoRefs.current[projectId];
+    if (!video || videoErrors[projectId]) return;
 
-    if (activeMediaId && activeMediaId !== projectId && videoRefs.current[activeMediaId]) {
-      try {
-        videoRefs.current[activeMediaId].pause();
-        videoRefs.current[activeMediaId].currentTime = 0;
-      } catch (_) {}
+    if (!video.paused) {
+      video.pause();
+      setActiveMediaId((current) => (current === projectId ? null : current));
+      return;
     }
 
-    setActiveMediaId(projectId);
-    const video = videoRefs.current[projectId];
-    if (video) {
-      video.muted = true;
-      video.currentTime = 0;
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {});
+    Object.entries(videoRefs.current).forEach(([otherId, otherVideo]) => {
+      if (otherId !== String(projectId) && otherVideo && !otherVideo.paused) {
+        otherVideo.pause();
       }
+    });
+
+    video.muted = true;
+    setActiveMediaId(projectId);
+    const playPromise = video.play();
+    if (playPromise) {
+      playPromise.catch(() => {
+        setActiveMediaId((current) => (current === projectId ? null : current));
+      });
     }
   };
 
-  const handleMouseLeave = (projectId) => {
-    const video = videoRefs.current[projectId];
-    if (video) {
-      try {
-        video.pause();
-        video.currentTime = 0;
-      } catch (_) {}
-    }
-    setActiveMediaId((current) => (current === projectId ? null : current));
-  };
+  useEffect(() => {
+    Object.values(videoRefs.current).forEach((video) => video?.pause());
+    setActiveMediaId(null);
+    setTouchMediaId(null);
+  }, [activeCategory, currentPage, sortLatest]);
 
   return (
     <section
       id="video-editing"
+      aria-labelledby="portfolio-video-heading"
       className="bg-[#080808] text-white py-10 sm:py-14 lg:py-16 border-b border-white/[0.08] scroll-mt-20"
     >
       <div className="global-container w-[calc(100%-32px)] sm:w-[calc(100%-64px)] lg:w-[calc(100%-120px)] max-w-[1440px] mx-auto">
+        <header className="mb-7 grid grid-cols-1 items-end gap-5 sm:mb-9 lg:grid-cols-2 lg:gap-10">
+          <div className="min-w-0">
+            <div className="mb-3 inline-flex items-center gap-2.5 text-[10px] font-mono font-semibold uppercase tracking-[0.2em] text-neutral-300 sm:text-[11px]">
+              <span className="h-2.5 w-2.5 shrink-0 border-2 border-brand-red" aria-hidden="true" />
+              <span>OUR WORK <span className="px-1 text-neutral-500">{'//'}</span> VIDEO EDITING</span>
+            </div>
+            <h2 id="portfolio-video-heading" className="font-display text-3xl font-black leading-tight tracking-[-0.04em] sm:text-4xl md:text-5xl">
+              <span className="text-white">Video </span><span className="text-brand-red">Portfolio</span>
+            </h2>
+            <span className="mt-3 block h-[2px] w-10 bg-brand-red" aria-hidden="true" />
+          </div>
+          <p className="max-w-xl text-sm leading-relaxed text-neutral-400 sm:text-base lg:justify-self-end lg:border-l lg:border-white/20 lg:py-1 lg:pl-6">
+            A collection of our best video editing work &mdash; commercial edits, brand reels, YouTube content, and cinematic visual stories.
+          </p>
+        </header>
+
         {/* Category Filter Bar & Sort Controller */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 pb-5 sm:pb-6 border-b border-white/10">
+        <div className="mb-6 flex flex-col justify-between gap-4 border-b border-white/10 pb-5 sm:mb-8 sm:gap-6 sm:pb-6 lg:flex-row lg:items-center">
           {/* Category Tabs */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div aria-label="Filter video projects by category" className="-mx-1 flex max-w-full items-center gap-2 overflow-x-auto px-1 pb-1 lg:flex-wrap lg:overflow-visible">
             {filterTabs.map(({ value, label }) => {
               const active = activeCategory === value;
               return (
@@ -219,10 +236,11 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
                   key={value}
                   type="button"
                   onClick={() => handleCategoryChange(value)}
-                  className={`text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-[0.14em] px-3.5 py-2.5 rounded-none border transition-colors cursor-pointer select-none ${
+                  aria-pressed={active}
+                  className={`shrink-0 whitespace-nowrap text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-[0.12em] sm:tracking-[0.14em] px-4 py-2.5 rounded-full border transition-colors cursor-pointer select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                     active
                       ? "bg-brand-red border-brand-red text-white"
-                      : "bg-black border-white/20 text-neutral-300 hover:text-white hover:border-white/40"
+                      : "bg-transparent border-white/25 text-neutral-300 hover:text-white hover:border-white/60"
                   }`}
                 >
                   {label}
@@ -277,33 +295,42 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
         ) : (
           <div
             data-testid="portfolio-video-grid"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border border-white/10 overflow-hidden bg-black"
+            className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3"
           >
             {paginatedProjects.map((project, idx) => {
+              const projectId = project.id || project.slug || idx;
               const hasVideo = Boolean(project.videoUrl);
-              const hasVideoError = Boolean(videoErrors[project.id]);
+              const hasVideoError = Boolean(videoErrors[projectId]);
               const mediaSrc = project.thumbnailUrl || project.imageUrl;
+              const displayCategory = project.categoryName || project.subCategory || project.category || "";
+              const isPlaying = activeMediaId === projectId;
+              const controlsVisible = isPlaying || hoveredMediaId === projectId || focusedMediaId === projectId || touchMediaId === projectId;
 
               return (
                 <article
-                  key={project.id || idx}
+                  key={projectId}
                   data-testid="portfolio-video-card"
-                  className="relative aspect-[16/9] w-full overflow-hidden bg-black select-none rounded-none border border-white/10 group focus-within:ring-2 focus-within:ring-brand-red focus-within:z-20"
-                  onMouseEnter={() => handleMouseEnter(project.id)}
-                  onMouseLeave={() => handleMouseLeave(project.id)}
-                  onFocus={() => handleMouseEnter(project.id)}
-                  onBlur={() => handleMouseLeave(project.id)}
+                  data-playing={isPlaying}
+                  className="group min-w-0 overflow-hidden border border-white/10 bg-[#0b0b0b] transition-colors hover:border-white/25 focus-within:border-brand-red"
+                  onMouseEnter={() => setHoveredMediaId(projectId)}
+                  onMouseLeave={() => setHoveredMediaId((current) => (current === projectId ? null : current))}
+                  onTouchStart={() => setTouchMediaId(projectId)}
+                  onFocus={() => setFocusedMediaId(projectId)}
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                      setFocusedMediaId((current) => (current === projectId ? null : current));
+                    }
+                  }}
                 >
-                  <Link
-                    href={`/portfolio/${project.slug || project.id}`}
-                    className="block w-full h-full relative cursor-pointer outline-none"
-                    aria-label={`View project ${project.title}`}
+                  <div
+                    data-testid="portfolio-video-preview"
+                    className="relative aspect-video w-full overflow-hidden bg-[#111]"
                   >
-                    {/* Media Layer (Video or Thumbnail Image) */}
                     {hasVideo && !hasVideoError ? (
                       <video
                         ref={(el) => {
-                          if (el) videoRefs.current[project.id] = el;
+                          if (el) videoRefs.current[projectId] = el;
+                          else delete videoRefs.current[projectId];
                         }}
                         src={project.videoUrl}
                         poster={cloudinaryImageUrl(mediaSrc, 960) || mediaSrc || undefined}
@@ -311,10 +338,11 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
                         muted
                         loop
                         preload="none"
-                        onError={() =>
-                          setVideoErrors((prev) => ({ ...prev, [project.id]: true }))
-                        }
-                        className="w-full h-full object-cover select-none pointer-events-none group-hover:scale-105 transition-transform duration-500 ease-out motion-reduce:transition-none motion-reduce:transform-none"
+                        onPlay={() => setActiveMediaId(projectId)}
+                        onPause={() => setActiveMediaId((current) => (current === projectId ? null : current))}
+                        onError={() => setVideoErrors((prev) => ({ ...prev, [projectId]: true }))}
+                        className="pointer-events-none h-full w-full select-none object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transform-none motion-reduce:transition-none"
+                        aria-label={`Preview of ${project.title}`}
                       />
                     ) : mediaSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -323,51 +351,68 @@ export default function PortfolioGrid({ items = [], categories = [] }) {
                         alt={project.title}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-cover select-none group-hover:scale-105 transition-transform duration-500 ease-out motion-reduce:transition-none motion-reduce:transform-none"
+                        className="h-full w-full select-none object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transform-none motion-reduce:transition-none"
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#111111] flex flex-col items-center justify-center p-6 text-center">
-                        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500 mb-1">
-                          [ARCHIVE // 4K]
-                        </span>
-                        <h4 className="font-display text-sm font-bold uppercase text-white/90 line-clamp-1">
-                          {project.title}
-                        </h4>
+                      <div className="flex h-full w-full flex-col items-center justify-center bg-[#111] p-6 text-center">
+                        <span className="mb-1 text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500">[ARCHIVE // 4K]</span>
+                        <h4 className="line-clamp-1 font-display text-sm font-bold uppercase text-white/90">{project.title}</h4>
                       </div>
                     )}
 
-                    {/* Subtle Dark Overlay (Hidden by Default, Smooth Fade-in on Hover & Focus) */}
                     <div
                       data-testid="video-card-overlay"
-                      className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 ease-out motion-reduce:transition-none pointer-events-none"
+                      className={`pointer-events-none absolute inset-0 bg-black/35 transition-opacity duration-200 motion-reduce:transition-none ${controlsVisible ? "opacity-100" : "opacity-0"}`}
+                      aria-hidden="true"
                     />
-
-                    {/* Centered Circular Play Button & VIEW PROJECT Button (Hidden by Default, Smooth Fade-in & Scale on Hover & Focus) */}
                     <div
                       data-testid="video-card-hover-controls"
-                      className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 pointer-events-none opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 scale-95 group-hover:scale-100 group-focus-within:scale-100 transition-all duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none"
+                      className={`absolute inset-0 z-10 flex items-center justify-center transition-all duration-200 motion-reduce:transform-none motion-reduce:transition-none ${controlsVisible ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"}`}
                     >
-                      {/* Circular Play Button */}
-                      <div
-                        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-black/50 backdrop-blur-sm border border-white/80 flex items-center justify-center text-white shadow-lg group-hover:scale-110 group-hover:border-white transition-all duration-300"
-                        aria-hidden="true"
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          togglePlayback(projectId);
+                        }}
+                        disabled={!hasVideo || hasVideoError}
+                        aria-label={`${isPlaying ? "Pause" : "Play"} ${project.title}`}
+                        className="flex h-12 w-12 items-center justify-center rounded-full border border-white/80 bg-black/60 text-white backdrop-blur-sm transition-colors hover:border-brand-red hover:bg-brand-red focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-40 sm:h-14 sm:w-14"
                       >
-                        <svg
-                          viewBox="0 0 24 24"
-                          className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5 fill-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <polygon points="6 4 20 12 6 20" />
-                        </svg>
-                      </div>
-
-                      {/* VIEW PROJECT Button */}
-                      <div className="px-3.5 sm:px-4 py-1.5 bg-black/60 backdrop-blur-sm border border-white/80 text-white rounded-none text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider inline-flex items-center gap-2 group-hover:bg-brand-red group-hover:border-brand-red transition-all duration-200">
-                        <span>VIEW PROJECT</span>
-                        <span className="text-sm leading-none" aria-hidden="true">→</span>
-                      </div>
+                        {isPlaying ? (
+                          <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden="true">
+                            <path d="M7 5h4v14H7zM15 5h4v14h-4z" />
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" className="ml-0.5 h-5 w-5 fill-current" aria-hidden="true">
+                            <path d="M6 4.7a1 1 0 0 1 1.5-.86l12 7.3a1 1 0 0 1 0 1.72l-12 7.3A1 1 0 0 1 6 19.3z" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
-                  </Link>
+                  </div>
+
+                  <div className="flex min-h-[100px] items-center justify-between gap-3 p-4 sm:p-5">
+                    <div className="min-w-0 border-l-2 border-brand-red pl-3">
+                      <h3 className="line-clamp-2 font-display text-sm font-bold leading-snug text-white sm:text-base">
+                        <Link href={`/portfolio/${project.slug || project.id}`} className="text-white no-underline transition-colors hover:text-brand-red focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                          {project.title}
+                        </Link>
+                      </h3>
+                      {displayCategory && (
+                        <p className="mt-1.5 truncate text-[10px] font-mono uppercase tracking-[0.12em] text-neutral-400 sm:text-[11px]">
+                          {displayCategory}
+                        </p>
+                      )}
+                    </div>
+                    <Link
+                      href={`/portfolio/${project.slug || project.id}`}
+                      className="inline-flex min-h-9 shrink-0 items-center gap-1.5 border border-brand-red bg-brand-red px-3 py-2 text-[9px] font-mono font-bold uppercase tracking-[0.08em] text-white no-underline transition-colors hover:bg-[#dc2626] sm:min-h-10 sm:px-3.5 sm:text-[10px] sm:tracking-[0.1em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    >
+                      VIEW PROJECT <span aria-hidden="true">&#8599;</span>
+                    </Link>
+                  </div>
                 </article>
               );
             })}

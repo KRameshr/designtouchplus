@@ -81,8 +81,8 @@ test("2. Home Hero displays heading, description, and CTA buttons directly over 
   // Left-aligned constrained width for optimal readability
   assert.match(
     content,
-    /max-w-xl lg:max-w-2xl xl:max-w-\[680px\]/,
-    "Copy block must be constrained to left area (max-w-xl to max-w-[680px])"
+    /max-w-xl lg:max-w-2xl xl:max-w-\[720px\]/,
+    "Copy block must be constrained to the left area with responsive room for the headline"
   );
 
   // Headline lines and red brand highlight on 'brands.'
@@ -98,8 +98,8 @@ test("2. Home Hero displays heading, description, and CTA buttons directly over 
   );
   assert.match(
     content,
-    /<span className="text-brand-red">\{headlineHighlight\}<\/span>/,
-    "Headline highlight must carry the brand red accent"
+    /<span className="block whitespace-nowrap text-brand-red">[\s\S]*\{headlineHighlight \|\| null\}/,
+    "The complete GROW BRANDS. line must carry the brand red accent and stay together"
   );
 
   // Subheading copy
@@ -125,6 +125,8 @@ test("2. Home Hero displays heading, description, and CTA buttons directly over 
     /bg-brand-red text-white.*border border-brand-red/,
     "Primary CTA button must retain solid brand red styling"
   );
+  assert.match(content, /primaryCtaLink = hero\?\.primaryCtaLink \?\? directProps\.primaryCtaLink \?\? DEFAULT_HERO\.primaryCtaLink/);
+  assert.match(content, /secondaryCtaLink = hero\?\.secondaryCtaLink \?\? directProps\.secondaryCtaLink \?\? DEFAULT_HERO\.secondaryCtaLink/);
 });
 
 test("3. Home Hero includes dark scrim gradient overlays for crisp readability", () => {
@@ -197,5 +199,39 @@ test("5. Home Hero preserves the Credentials strip below the video canvas", () =
     /Cinema Quality/,
     "Cinema Quality credential item must be preserved"
   );
+  for (const copy of [
+    "On-time, every time.",
+    "Pro-level edits & visuals.",
+    "Until you're satisfied.",
+    "Direct & clear communication.",
+  ]) {
+    assert.ok(content.includes(copy), `Feature strip must include ${copy}`);
+  }
+  assert.match(content, /Clock3/);
+  assert.match(content, /Clapperboard/);
+  assert.match(content, /RefreshCw/);
+  assert.match(content, /Headset/);
+});
+
+test("6. Home Hero uses the approved editorial copy and preserves the existing video source", () => {
+  const heroPath = path.join(FRONTEND_ROOT, "components/home/Hero.jsx");
+  const content = fs.readFileSync(heroPath, "utf8");
+
+  for (const copy of [
+    "CREATIVE VIDEO & CONTENT STUDIO",
+    "WE CREATE",
+    "VIDEOS THAT",
+    "GROW",
+    "BRANDS.",
+    "Helping businesses and creators tell powerful stories through professional video editing & creative content.",
+    "VIEW PORTFOLIO",
+    "BOOK A CALL",
+  ]) {
+    assert.ok(content.includes(copy), `Hero must include approved copy: ${copy}`);
+  }
+
+  assert.match(content, /videoUrl = hero\?\.videoUrl \?\? directProps\.videoUrl \?\? DEFAULT_HERO\.videoUrl/);
+  assert.match(content, /src=\{videoUrl\}\s+autoPlay\s+muted\s+loop\s+playsInline\s+preload="metadata"/);
+  assert.match(content, /<source src=\{videoUrl\} type="video\/mp4" \/>/);
 });
 

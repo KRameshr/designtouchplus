@@ -19,7 +19,9 @@ function renderStoryHeading(rawHeading) {
   if (!text || /^crafting\s+stories\s+that\s+resonate\.?$/i.test(text)) {
     return (
       <>
-        Crafting Stories That <span className="text-brand-green">Resonate.</span>
+        <span className="block">Crafting</span>
+        <span className="block">Stories That</span>
+        <span className="block text-brand-green">Resonate.</span>
       </>
     );
   }
@@ -143,7 +145,7 @@ const OurStory = ({ aboutContent }) => {
         />
       )}
 
-      {/* Subtle Dark Gradient Overlay: Left-aligned for text readability while keeping the video visible on the right */}
+       {/* Subtle Dark Gradient Overlay keeps centered text readable while keeping the video visible */}
       <div
         className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/85 via-45% to-black/20 pointer-events-none z-[1]"
         aria-hidden="true"
@@ -153,17 +155,17 @@ const OurStory = ({ aboutContent }) => {
         aria-hidden="true"
       />
 
-      {/* Left-Aligned Story Content Overlaid Directly on Top of the Video */}
+      {/* Centered Story Content Overlaid Directly on Top of the Video */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-16 sm:py-20 lg:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="max-w-xl lg:max-w-2xl flex flex-col items-start text-left"
+          className="mx-auto flex w-full max-w-4xl flex-col items-center text-center"
         >
           {/* Section Label: THE JOURNEY with Red Square Accent */}
-          <div className="flex items-center gap-2.5 mb-3.5 sm:mb-4">
+          <div className="mb-3.5 flex items-center justify-center gap-2.5 sm:mb-4">
             <span
               className="w-2.5 h-2.5 bg-brand-red rounded-none shrink-0 inline-block"
               aria-hidden="true"
@@ -174,18 +176,20 @@ const OurStory = ({ aboutContent }) => {
           </div>
 
           {/* Main Heading: Crafting Stories That Resonate. */}
-          <h2 className="font-display font-black uppercase tracking-[-0.03em] text-white text-3xl sm:text-4xl md:text-5xl lg:text-[46px] xl:text-[50px] leading-[1.08] mb-6">
+          <h2 className="font-display font-black uppercase tracking-[-0.03em] text-white text-3xl sm:text-4xl md:text-5xl lg:text-[46px] xl:text-[50px] leading-[1.08] mb-6 text-center">
             {aboutContent && aboutContent.storyHeading && aboutContent.storyHeading !== "Turning Ideas Into Impact." ? (
               renderStoryHeading(aboutContent.storyHeading)
             ) : (
               <>
-                Crafting Stories That <span className="text-brand-green">Resonate.</span>
+                <span className="block">Crafting</span>
+                <span className="block">Stories That</span>
+                <span className="block text-brand-green">Resonate.</span>
               </>
             )}
           </h2>
 
           {/* Story Narrative Paragraphs */}
-          <div className="text-neutral-200 text-sm sm:text-base lg:text-[16px] leading-[1.75] font-normal font-poppins space-y-3.5 max-w-xl mb-7">
+          <div className="text-neutral-200 text-sm sm:text-base lg:text-[16px] leading-[1.75] font-normal font-poppins space-y-3.5 w-full max-w-3xl mb-7 text-center">
             <p className="text-neutral-200 font-medium font-poppins">
               From boutique storytelling to high-impact commercial visuals, every frame we produce is driven by purpose, craft, and precision.
             </p>
@@ -200,13 +204,13 @@ const OurStory = ({ aboutContent }) => {
           </div>
 
           {/* Dynamic Founder Signature & Designation */}
-          <div className="flex flex-col items-start pt-3.5 border-t border-white/[0.12] w-full max-w-xs">
+          <div className="flex w-full max-w-xs flex-col items-center border-t border-white/[0.12] pt-3.5 text-center">
             {aboutContent?.founderSignatureUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={aboutContent.founderSignatureUrl}
                 alt={`Founder Signature - ${founderName}`}
-                className="h-8 sm:h-10 w-auto object-contain object-left mb-1.5 brightness-0 invert opacity-90 select-none"
+                className="mb-1.5 h-8 w-auto select-none object-contain object-center brightness-0 invert opacity-90 sm:h-10"
               />
             ) : (
               /* Clean, professional text-based signature fallback */

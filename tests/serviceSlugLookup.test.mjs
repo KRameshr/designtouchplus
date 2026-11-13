@@ -149,6 +149,8 @@ test("6. normalizeServicesList formats custom backend services into serializable
 test("7. Footer.jsx service links point to valid registered routes", () => {
   const footerPath = path.join(FRONTEND_ROOT, "components/layout/Footer.jsx");
   const content = fs.readFileSync(footerPath, "utf8");
+  const navigationPath = path.join(FRONTEND_ROOT, "lib/siteNavigation.js");
+  const navigationContent = fs.readFileSync(navigationPath, "utf8");
 
   const requiredRoutes = [
     "/services/video-editing",
@@ -160,8 +162,11 @@ test("7. Footer.jsx service links point to valid registered routes", () => {
   ];
 
   for (const route of requiredRoutes) {
-    assert.match(content, new RegExp(route), `Footer must link to ${route}`);
+    assert.ok(navigationContent.includes(route), `Shared footer services must include ${route}`);
   }
+
+  assert.match(content, /import \{ FOOTER_SERVICES \} from "@\/lib\/siteNavigation"/);
+  assert.match(content, /FOOTER_SERVICES\.map/);
 });
 
 test("8. Service Detail page enforces sharp 0px border-radius and refined visual hierarchy", () => {
